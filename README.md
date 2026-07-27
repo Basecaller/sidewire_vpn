@@ -16,6 +16,20 @@ VPN-клиент для Android на базе ядра **Xray**, с собств
 - Kill switch (системный Always-on VPN), шифрование DNS (DoH), блокировка рекламы через AdGuard DNS
 - Скорость в уведомлении, выбор самого быстрого сервера по пингу
 
+## Контакты и поддержка
+
+[![Telegram](https://img.shields.io/badge/Telegram-@Vflener-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Vflener)
+
+Связь, вопросы и предложения — Telegram: **[@Vflener](https://t.me/Vflener)**
+
+Поддержать проект (TON):
+
+```
+UQAYHEz4ArwD3dW9HXDlxtrpbswK_pRzhBhD5hpEIwgNKjxC
+```
+
+[Отправить через Tonkeeper](https://app.tonkeeper.com/transfer/UQAYHEz4ArwD3dW9HXDlxtrpbswK_pRzhBhD5hpEIwgNKjxC)
+
 ## Флейворы
 
 - `playstore` — пакет `com.sidewire.app`
