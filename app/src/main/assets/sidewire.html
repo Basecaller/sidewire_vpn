@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sidewire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --ease-out:cubic-bezier(0.23,1,0.32,1);--ease-io:cubic-bezier(0.77,0,0.175,1);--ease-drawer:cubic-bezier(0.32,0.72,0,1);--spring:cubic-bezier(0.34,1.56,0.64,1);
+  --bg:#232326;--bg-2:#1d1d20;--bg-3:#191919;
+  --card:rgba(255,255,255,.055);--card-2:rgba(255,255,255,.085);--card-hover:rgba(255,255,255,.12);
+  --line:rgba(255,255,255,.09);--line-soft:rgba(255,255,255,.06);
+  --text:#fff;--soft:rgba(255,255,255,.62);--muted:rgba(255,255,255,.32);
+  --green:#3ee08a;--green-2:#26c974;--green-dim:rgba(62,224,138,.14);--green-line:rgba(62,224,138,.34);
+  --amber:#FFB020;--amber-dim:rgba(255,176,32,.15);--red:#FF5C5C;--red-dim:rgba(255,92,92,.14);
+  --radius:16px;--font:"Montserrat",-apple-system,"Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font)}
+.screen{position:relative;height:100vh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+.screen::before{content:"";position:absolute;top:0;left:0;right:0;height:320px;background:radial-gradient(120% 100% at 50% -18%,rgba(62,224,138,.10),transparent 62%);pointer-events:none;z-index:0}
+.appbar{padding:calc(env(safe-area-inset-top) + 16px) 22px 4px;flex:0 0 auto;display:flex;align-items:center;gap:10px;position:relative;z-index:2}
+.logo{width:32px;height:32px;flex:0 0 auto}
+.appbar h1{font-size:19px;font-weight:700;letter-spacing:-.3px;margin:0}
+.badge{font-family:var(--mono);font-size:9.5px;color:var(--soft);padding:4px 9px;border-radius:8px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;gap:5px;transition:color .3s}
+.badge .d{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);transition:background .3s,box-shadow .3s}
+.badge[data-s="off"] .d{background:var(--muted);box-shadow:none}
+.badge[data-s="connecting"] .d{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.badge[data-s="error"] .d{background:var(--red);box-shadow:0 0 8px var(--red)}
+.gear{margin-left:auto;width:38px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--soft);cursor:pointer;transition:transform .2s var(--spring),background .18s,color .18s}
+.gear:active{transform:scale(.9) rotate(-30deg)}
+.views{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 18px 18px;scrollbar-width:none;position:relative;z-index:1}
+.views::-webkit-scrollbar{display:none}
+.view{display:none}
+.view[data-active="true"]{display:block}
+.view[data-active="true"]>*{animation:rise .44s var(--ease-out) both}
+.view[data-active="true"]>*:nth-child(2){animation-delay:.04s}.view[data-active="true"]>*:nth-child(3){animation-delay:.08s}.view[data-active="true"]>*:nth-child(4){animation-delay:.12s}.view[data-active="true"]>*:nth-child(n+5){animation-delay:.16s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sect{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin:22px 4px 10px;display:flex;align-items:center;gap:8px}
+.sect .act{margin-left:auto;color:var(--green);cursor:pointer;letter-spacing:.5px;text-transform:none;font-size:11px;transition:opacity .16s}
+.sect .act:active{opacity:.5}
+.connect{text-align:center;margin-top:20px;padding:6px 0 4px}
+.dial{width:172px;height:172px;border-radius:50%;margin:0 auto;position:relative;cursor:pointer;background:none;border:0;padding:0;display:flex;align-items:center;justify-content:center}
+.dial .rimg{position:absolute;inset:0;border-radius:50%;border:2px solid var(--line);transition:border-color .4s,box-shadow .4s}
+.dial .arc{position:absolute;inset:0;border-radius:50%;border:2px solid transparent;border-top-color:var(--amber);opacity:0;transition:opacity .3s}
+.dome{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;background:transparent;transition:transform .2s var(--spring)}
+.dial:active .dome{transform:scale(.93)}
+.dome .pico{width:52px;height:52px;color:var(--soft);transition:color .4s}
+.connect[data-s="on"] .rimg{border-color:var(--green);box-shadow:0 0 22px -2px rgba(62,224,138,.4)}
+.connect[data-s="on"] .dome .pico{color:var(--green)}
+.connect[data-s="error"] .rimg{border-color:var(--red)}.connect[data-s="error"] .dome .pico{color:var(--red)}
+.connect[data-s="connecting"] .arc{opacity:1}.connect[data-s="connecting"] .dome .pico{color:var(--amber)}
+@media (prefers-reduced-motion:no-preference){ .connect[data-s="connecting"] .arc{animation:spin .9s linear infinite} }
+@keyframes spin{to{transform:rotate(360deg)}}
+.cstatus{font-size:17px;font-weight:600;margin:18px 0 0;letter-spacing:-.2px}
+.cstatus .tm{color:var(--green);font-family:var(--mono);font-weight:500;margin-left:4px}
+.connect[data-s="on"] .cstatus{color:var(--green)}
+.cserver{font-family:var(--mono);font-size:12px;color:var(--soft);margin:6px 0 0;display:flex;align-items:center;justify-content:center;gap:7px}
+.cserver .fl{font-size:15px}
+.speeds{display:flex;gap:9px;margin-top:16px}
+.spd{flex:1;background:var(--card);border:1px solid var(--line-soft);border-radius:13px;padding:10px 8px 11px}
+.spd .k{display:flex;align-items:center;justify-content:center;gap:4px;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:0}
+.spd .v{font-family:var(--mono);font-size:15px;font-weight:500;margin:5px 0 0}
+.spd .v small{font-size:9px;color:var(--soft);font-weight:400}
+.spd.dl .v{color:var(--green)}
+.graph{background:var(--card);border:1px solid var(--line-soft);border-radius:14px;padding:11px 12px 6px;margin-top:16px}
+.gtop{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px}
+.gtop .gdl{color:var(--green)}.gtop .gul{color:var(--soft)}
+.gtop small{color:var(--muted);font-size:9px}
+.graph svg{display:block;width:100%;height:46px;margin-top:4px;overflow:visible}
+.srvping{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--soft)}
+.srvping .d{width:7px;height:7px;border-radius:50%}
+.srvping.good .d{background:var(--green)}.srvping.mid .d{background:var(--amber)}.srvping.bad .d{background:var(--red)}
+.srvping.dead{color:var(--red)}.srvping.dead .d{background:var(--red)}
+.errbox{background:var(--red-dim);border:1px solid rgba(255,92,92,.3);border-radius:14px;padding:13px 14px;margin-top:12px;text-align:left;display:none}
+.connect[data-s="error"]~.errbox{display:block;animation:rise .3s var(--ease-out)}
+.errbox p{margin:0;font-size:12.5px;color:#ffd7d7;line-height:1.4}
+.errbox .btns{display:flex;gap:8px;margin-top:11px}
+.errbox .eb{flex:1;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:var(--text);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
+.errbox .eb.pri{background:var(--red);border-color:var(--red);color:#3a0d0d}
+.subimport{display:flex;gap:8px;align-items:center}
+.subimport .sfield{flex:1;display:flex;align-items:center;gap:8px;height:44px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:0 12px;transition:border-color .18s,box-shadow .18s}
+.subimport .sfield:focus-within{border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
+.subimport .sfield i{color:var(--muted);font-size:17px}
+.subimport .sfield input{flex:1;background:0;border:0;outline:0;color:var(--text);font-family:var(--mono);font-size:12px}
+.subimport .sfield input::placeholder{color:var(--muted)}
+.subimport .ib{width:44px;height:44px;flex:0 0 auto;border-radius:12px;border:1px solid var(--line);background:var(--card-2);color:var(--text);font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .18s var(--spring),background .18s}
+.subimport .ib:active{transform:scale(.9)}
+.subimport .ib.go{background:var(--green);color:#083320;border-color:var(--green)}
+.subblock{margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:border-color .25s}
+.subblock[data-activesub="true"]{border-color:var(--green-line)}
+.subhdr{display:flex;align-items:center;gap:7px;padding:12px 11px 10px}
+.subtoggle{display:flex;align-items:center;gap:10px;flex:1;min-width:0;background:0;border:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.subtoggle>i{color:var(--soft);font-size:18px;flex:0 0 auto}
+.subti{min-width:0}
+.snm{font-size:14.5px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sdt{font-family:var(--mono);font-size:9px;color:var(--muted);margin:3px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sic{width:33px;height:33px;border-radius:9px;background:var(--card-2);border:1px solid var(--line);color:var(--soft);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;transition:transform .18s var(--spring)}
+.sic:active{transform:scale(.86)}
+.subinfo{padding:0 14px 12px;display:flex;flex-direction:column;gap:8px}
+.sbrow{display:flex;align-items:center;gap:9px}
+.sbrow .sbl{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;width:42px;flex:0 0 auto}
+.sbbar{flex:1;height:6px;border-radius:3px;background:rgba(0,0,0,.3);overflow:hidden}
+.sbbar b{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green-2),var(--green));transition:width .6s var(--ease-out)}
+.sbbar.time b{background:linear-gradient(90deg,#5aa9ff,#8fd0ff)}
+.sbrow .sbv{font-family:var(--mono);font-size:10px;color:var(--soft);flex:0 0 auto;text-align:right;min-width:86px}
+.subservers{border-top:1px solid var(--line-soft)}
+.srow{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;transition:background .14s,transform .16s var(--ease-out);border-left:3px solid transparent}
+.srow:active{transform:scale(.995)}
+.srow+.srow{border-top:1px solid var(--line-soft)}
+.srow.act{background:var(--green-dim);border-left-color:var(--green)}
+.srow .nm2{font-size:14px;font-weight:500;margin:0}
+.srow .mt2{font-size:10px;color:var(--soft);margin:3px 0 0;font-family:var(--mono);letter-spacing:.3px}
+.srow .chev{margin-left:auto;color:var(--muted);font-size:15px}
+.srvping{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--soft);margin-left:auto}
+.srvping .d{width:7px;height:7px;border-radius:50%}
+.srvping.good .d{background:var(--green)}.srvping.mid .d{background:var(--amber)}.srvping.bad .d{background:var(--red)}
+.srvping.dead{color:var(--red)}.srvping.dead .d{background:var(--red)}
+.srvping.meas .d{background:var(--amber);animation:mpulse 1s ease-in-out infinite}
+@keyframes mpulse{0%,100%{opacity:.35}50%{opacity:1}}
+img.icn{object-fit:cover;background:#3a3a3a}
+.chip u img{width:22px;height:22px;border-radius:6px;display:block}
+.lane{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px 15px;margin-top:11px}
+.lane-h{display:flex;align-items:center;gap:9px}
+.lane-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green)}
+.lane[data-kind="direct"] .lane-dot{background:var(--amber);box-shadow:0 0 7px var(--amber)}
+.lane-t{font-size:14px;font-weight:600}
+.lane-badge{margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--card-2);color:var(--soft);border:1px solid var(--line)}
+.lane p{font-size:11.5px;color:var(--soft);margin:6px 0 0;line-height:1.45}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px;min-height:34px}
+.chip{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:11px;background:var(--card-2);border:1px solid var(--line);font:inherit;font-size:12px;color:var(--text);cursor:pointer;transition:transform .18s var(--spring)}
+.chip:active{transform:scale(.9)}
+.chip u{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-style:normal;color:#06301c;background:var(--green)}
+.chip.ghost{background:transparent;border-style:dashed;color:var(--muted);cursor:default;padding:6px 12px}
+.empty{font-family:var(--mono);font-size:11px;color:var(--muted);padding:8px 2px}
+.hint{font-size:11.5px;color:var(--soft);margin:12px 4px 0;line-height:1.5}
+.list{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.row{display:flex;align-items:center;gap:13px;padding:12px 15px;min-height:56px;background:transparent;border:0;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:background .14s,transform .16s var(--ease-out)}
+.row:active{transform:scale(.99)}
+.row.static{cursor:default}.row.static:active{transform:none}
+.row+.row{border-top:1px solid var(--line-soft)}
+.icn{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex:0 0 auto}
+.tt{font-size:14px;font-weight:500;margin:0;letter-spacing:-.1px}
+.ss{font-size:11px;color:var(--soft);margin:3px 0 0;font-family:var(--mono);letter-spacing:.2px}
+.chev{margin-left:auto;color:var(--muted);font-size:16px}
+.gsub{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:9px 15px 3px}
+.rowdot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);flex:0 0 auto}
+.sw{width:48px;height:28px;border-radius:15px;background:var(--card-2);border:1px solid var(--line);flex:0 0 auto;position:relative;padding:0;cursor:pointer;transition:background .3s var(--ease-out),border-color .3s}
+.sw b{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--soft);transition:transform .34s var(--spring),background .3s,width .2s var(--ease-out)}
+.sw:active b{width:26px}
+.sw[aria-checked="true"]{background:var(--green);border-color:var(--green)}
+.sw[aria-checked="true"] b{transform:translateX(20px);background:#06301c}
+.coach{display:none;gap:12px;background:var(--amber-dim);border:1px solid rgba(255,176,32,.3);border-radius:14px;padding:14px;margin-top:14px}
+.coach[data-open="true"]{display:flex;animation:rise .4s var(--ease-out)}
+.coach .ci{color:var(--amber);font-size:22px;flex:0 0 auto;margin-top:1px}
+.coach h3{margin:0;font-size:14px;font-weight:600}
+.coach p{margin:6px 0 0;font-size:12px;color:var(--soft);line-height:1.5}
+.coach .btn{height:34px;margin-top:11px;font-size:13px}
+.nav{flex:0 0 auto;display:flex;background:var(--bg-3);border-top:1px solid var(--line-soft);padding:9px 6px calc(env(safe-area-inset-bottom) + 14px);position:relative;z-index:2}
+.tab{flex:1;background:0;border:0;font:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);cursor:pointer;transition:color .18s,transform .16s var(--ease-out)}
+.tab:active{transform:scale(.9)}
+.tab i{font-size:21px;transition:transform .24s var(--spring)}
+.tab span{font-size:9.5px;font-weight:500}
+.tab[data-active="true"]{color:var(--text)}.tab[data-active="true"] i{transform:translateY(-2px)}
+.field{display:flex;gap:9px}
+.field input{flex:1;height:42px;border-radius:11px;border:1px solid var(--line);background:var(--bg-2);padding:0 13px;font-family:var(--mono);font-size:12px;color:var(--text);outline:0}
+.field input::placeholder{color:var(--muted)}
+.search{display:flex;align-items:center;gap:9px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:0 12px;height:42px;margin-top:6px;transition:border-color .18s,box-shadow .18s}
+.search:focus-within{border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
+.search i{color:var(--muted);font-size:17px}
+.search input{flex:1;background:0;border:0;outline:0;color:var(--text);font-size:13px}
+.search input::placeholder{color:var(--muted)}
+.bulk{display:flex;gap:8px;margin-top:10px}
+.bulk button{flex:1;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card-2);color:var(--text);font:inherit;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .18s var(--spring)}
+.bulk button:active{transform:scale(.96)}
+.bulk button i{font-size:15px}
+.btn{height:42px;padding:0 17px;border-radius:12px;border:0;background:var(--green);color:#06301c;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:transform .18s var(--spring),filter .16s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(.96)}
+.btn.quiet{background:var(--card-2);color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:var(--red);color:#3a0d0d}
+.btn.wide{width:100%}
+.notif{display:none;background:#0e0e10;border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-top:2px}
+.notif[data-open="true"]{display:block}
+.notif .nt{display:flex;align-items:center;gap:9px}
+.notif .nq{width:26px;height:26px;border-radius:8px;background:var(--green-dim);border:1px solid var(--green-line);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:15px}
+.notif .nname{font-size:11px;font-weight:600}.notif .nmeta{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-left:auto}
+.notif .nbody{font-size:13px;font-weight:500;margin:9px 0 0}
+.notif .nsub{font-size:11px;color:var(--soft);font-family:var(--mono);margin:3px 0 0}
+.notif .nact{margin-top:11px;height:34px;width:100%;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:var(--text);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .3s var(--ease-out);z-index:50;backdrop-filter:blur(2px)}
+.scrim[data-open="true"]{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg-2);border-radius:26px 26px 0 0;padding:12px 18px calc(env(safe-area-inset-bottom) + 30px);max-height:86%;overflow-y:auto;transform:translateY(101%);transition:transform .42s var(--ease-drawer);z-index:60;scrollbar-width:none;border:1px solid var(--line);border-bottom:0}
+.sheet::-webkit-scrollbar{display:none}
+.sheet[data-open="true"]{transform:translateY(0)}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 15px}
+.sheet h2{font-size:20px;font-weight:700;letter-spacing:-.3px;margin:0 2px 6px}
+.sheet .lead{font-size:12.5px;color:var(--soft);margin:0 2px 15px;line-height:1.5}
+.step{display:flex;gap:12px;padding:12px 2px}
+.step+.step{border-top:1px solid var(--line-soft)}
+.num{width:24px;height:24px;border-radius:8px;background:var(--green-dim);border:1px solid var(--green-line);color:var(--green);font-family:var(--mono);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px}
+.step p{margin:0;font-size:13.5px;line-height:1.45}
+.step small{display:block;color:var(--soft);font-size:11.5px;margin-top:4px;line-height:1.45;font-family:var(--mono)}
+.mrow{display:flex;align-items:center;gap:15px;width:100%;background:0;border:0;font:inherit;color:var(--text);font-size:15px;font-weight:500;padding:15px 8px;cursor:pointer;border-radius:12px}
+.mrow:active{background:var(--card)}
+.mrow i{font-size:21px;color:var(--soft);width:24px;text-align:center}
+.mrow.danger{color:var(--red)}.mrow.danger i{color:var(--red)}
+.mrow+.mrow{border-top:1px solid var(--line-soft)}
+.qrbox{aspect-ratio:1;max-width:210px;margin:2px auto 0;border-radius:18px;background:#0c0c0e;position:relative;overflow:hidden;border:1px solid var(--line)}
+.qrbox .corner{position:absolute;width:34px;height:34px;border:3px solid var(--green)}
+.qrbox .tl{top:14px;left:14px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}.qrbox .tr{top:14px;right:14px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}.qrbox .bl{bottom:14px;left:14px;border-right:0;border-top:0;border-radius:0 0 0 8px}.qrbox .br{bottom:14px;right:14px;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.qrbox .scan{position:absolute;left:14px;right:14px;height:2px;background:var(--green);box-shadow:0 0 12px var(--green);top:14px}
+@media (prefers-reduced-motion:no-preference){.qrbox .scan{animation:scan 2s var(--ease-io) infinite}}
+@keyframes scan{0%{top:14px}50%{top:calc(100% - 16px)}100%{top:14px}}
+.dialog{position:absolute;inset:0;z-index:65;display:flex;align-items:center;justify-content:center;padding:26px;opacity:0;pointer-events:none;transition:opacity .26s var(--ease-out)}
+.dialog[data-open="true"]{opacity:1;pointer-events:auto}
+.dialog .card{background:#2c2c30;border:1px solid var(--line);border-radius:20px;padding:20px 18px;width:100%;transform:scale(.92);transition:transform .3s var(--spring)}
+.dialog[data-open="true"] .card{transform:scale(1)}
+.dialog h3{margin:0;font-size:17px;font-weight:600}
+.dialog p{margin:9px 0 0;font-size:13px;color:var(--soft);line-height:1.5}
+.dialog .btns{display:flex;gap:9px;margin-top:18px}
+.dialog .btns .btn{flex:1}
+.perm{position:absolute;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;padding:0 26px;opacity:0;pointer-events:none;transition:opacity .35s var(--ease-out)}
+.perm[data-open="true"]{opacity:1;pointer-events:auto}
+.perm .inner{margin:auto 0;text-align:center}
+.perm .shield{width:88px;height:88px;border-radius:26px;margin:0 auto 22px;background:var(--green-dim);border:1px solid var(--green-line);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:42px}
+.perm h2{font-size:23px;font-weight:700;letter-spacing:-.4px;margin:0}
+.perm .lead{font-size:13.5px;color:var(--soft);line-height:1.6;margin:12px 0 0}
+.perm ul{list-style:none;padding:0;margin:22px 0 0;text-align:left;display:flex;flex-direction:column;gap:12px}
+.perm li{display:flex;gap:11px;font-size:13px;color:var(--soft);line-height:1.4}
+.perm li i{color:var(--green);font-size:19px;flex:0 0 auto;margin-top:1px}
+.perm .foot{padding:0 0 34px;display:flex;flex-direction:column;gap:10px}
+.perm .sysnote{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;margin-top:8px}
+.toast{position:fixed;left:18px;right:18px;bottom:96px;background:#333;border:1px solid var(--line);border-radius:13px;padding:12px 15px;display:flex;align-items:center;gap:11px;font-size:13px;z-index:70;box-shadow:0 18px 40px -12px #000;opacity:0;transform:translateY(15px) scale(.96);pointer-events:none;transition:opacity .26s var(--spring),transform .26s var(--spring)}
+.toast[data-open="true"]{opacity:1;transform:none}
+.toast i{color:var(--green);font-size:18px;flex:0 0 auto}
+@media (prefers-reduced-motion:reduce){*{transition-duration:1ms !important;animation:none !important}}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="appbar">
+    <button class="gear" data-view="more" aria-label="Настройки"><i class="ti ti-settings"></i></button>
+    <svg class="logo" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="12" fill="#3ee08a" fill-opacity=".14" stroke="#3ee08a" stroke-opacity=".4"/><path d="M12 27c5-1 6-14 11-14 3 0 5 3 5 7" stroke="#3ee08a" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="27" r="2.6" fill="#3ee08a"/><circle cx="28" cy="20" r="2.6" fill="#fff"/></svg>
+    <h1>Sidewire</h1>
+    <span class="badge" id="badge" data-s="off"><span class="d"></span><span id="badgeTxt">OFFLINE</span></span>
+    <button class="gear" data-act="addmenu" aria-label="Добавить подписку" style="margin-left:auto"><i class="ti ti-plus"></i></button>
+  </div>
+  <div class="views">
+    <section class="view" id="v-flow" data-active="true">
+      <div class="connect" id="connect" data-s="off">
+        <button class="dial" id="power" data-power="1" aria-label="Переключить VPN"><span class="rimg"></span><span class="arc"></span>
+          <span class="dome"><svg class="pico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="12"/><path d="M6.4 6.4a8 8 0 1 0 11.2 0"/></svg></span>
+        </button>
+        <p class="cstatus" id="cstatus" aria-live="polite">Отключено</p>
+        <p class="cserver" id="cserver"></p>
+        <div class="graph">
+          <div class="gtop"><span class="gdl"><i class="ti ti-arrow-down"></i> <span id="dl">0.0</span> <small>Мбит/с</small></span><span class="gul"><span id="ul">0.0</span> <small>Мбит/с</small> <i class="ti ti-arrow-up"></i></span></div>
+          <svg viewBox="0 0 300 46" preserveAspectRatio="none"><polyline id="sparkFill" fill="#3ee08a" fill-opacity=".09" stroke="none" points=""/><polyline id="spark" fill="none" stroke="#3ee08a" stroke-width="2" points=""/></svg>
+        </div>
+      </div>
+      <div class="errbox" id="errbox"><p id="errtxt">Узел недоступен.</p><div class="btns"><button class="eb pri" data-act="retry">Повторить</button><button class="eb" data-act="tonodes">Другой узел</button></div></div>
+      <div class="sect">Подписки <span class="act" data-act="collapseall" id="collapseAll">Скрыть все</span></div>
+      <div class="subimport" id="subimport"><div class="sfield"><i class="ti ti-link"></i><input id="linkIn" placeholder="Ссылка на подписку" spellcheck="false"></div><button class="ib" data-sheet="qr" aria-label="QR"><i class="ti ti-qrcode"></i></button><button class="ib go" id="linkGo" aria-label="Добавить"><i class="ti ti-plus"></i></button></div>
+      <div class="search"><i class="ti ti-search"></i><input id="nodeSearch" placeholder="Поиск сервера" spellcheck="false"></div>
+      <button class="btn quiet wide" style="margin-top:10px" data-act="fastest"><i class="ti ti-bolt"></i> Самый быстрый сервер</button>
+      <div id="subsArea" style="margin-top:4px"></div>
+    </section>
+    <section class="view" id="v-apps">
+      <div class="coach" id="coach"><i class="ti ti-info-circle ci"></i><div><h3>Авто-управление VPN по приложениям</h3><p>Два списка: одни приложения <b>включают</b> VPN при открытии, другие — <b>выключают</b>. При выходе прежнее состояние возвращается. Нужен доступ к статистике использования.</p><button class="btn" data-act="coachok">Понятно</button></div></div>
+      <div id="uaBanner" class="lane" style="display:none"><div class="lane-h"><span class="lane-dot" style="background:var(--amber);box-shadow:0 0 7px var(--amber)"></span><span class="lane-t">Нужно разрешение</span></div><p>Разрешите «Доступ к данным об использовании» — без него приложение не увидит, что вы открыли выбранное приложение.</p><button class="btn wide" style="margin-top:11px" data-act="grantua">Дать разрешение</button></div>
+      <div class="sect">Включать VPN при открытии</div>
+      <p class="hint" style="margin:2px 0 8px">Заходишь в приложение без VPN — он включается; выходишь — выключается. Если VPN уже был включён, останется.</p>
+      <div class="list" id="onList"></div>
+      <button class="btn quiet wide" style="margin-top:10px" data-sheet="catalog" data-mode="on"><i class="ti ti-device-mobile"></i> Добавить приложения</button>
+
+      <div class="sect" style="margin-top:20px">Отключать VPN при открытии</div>
+      <p class="hint" style="margin:2px 0 8px">Заходишь в приложение с включённым VPN — он выключается; выходишь — включается обратно.</p>
+      <div class="list" id="offList"></div>
+      <button class="btn quiet wide" style="margin-top:10px" data-sheet="catalog" data-mode="off"><i class="ti ti-device-mobile"></i> Добавить приложения</button>
+
+      <div class="bulk" style="margin-top:18px"><button data-act="reset"><i class="ti ti-trash"></i>Сбросить всё</button></div>
+    </section>
+    <section class="view" id="v-more">
+      <div class="sect">Защита</div>
+      <div class="list">
+        <div class="row" data-act="killswitch"><div class="icn" style="background:#3a3a3a"><i class="ti ti-plug-off" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Kill switch</p><p class="ss">always-on vpn · системная блокировка</p></div><i class="ti ti-chevron-right" style="color:#666"></i></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-shield-half" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Шифровать DNS</p><p class="ss">doh · шифрование запросов</p></div><button class="sw" data-pref="pref_local_dns_enabled" role="switch" aria-checked="false"><b></b></button></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-ad-off" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Блокировать рекламу</p><p class="ss">adguard dns</p></div><button class="sw" data-adblock role="switch" aria-checked="false"><b></b></button></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-gauge" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Скорость в уведомлении</p><p class="ss">показывать трафик в реальном времени</p></div><button class="sw" data-pref="pref_speed_enabled" role="switch" aria-checked="false"><b></b></button></div>
+      </div>
+      <div class="sect">Уведомление</div>
+      <div class="list"><div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-bell" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Постоянное уведомление</p><p class="ss">со шторки, кнопка отключения</p></div><button class="sw" data-set="notif" role="switch" aria-checked="true"><b></b></button></div></div>
+      <div class="notif" id="notifPrev"><div class="nt"><div class="nq"><i class="ti ti-shield-half-filled"></i></div><span class="nname">Sidewire</span><span class="nmeta" id="nMeta">VPN активен</span></div><p class="nbody" id="nBody">Защищено</p><p class="nsub" id="nSub">ядро xray</p><button class="nact" data-act="notifdisc">Отключить</button></div>
+      <p class="hint">Android требует уведомление, пока работает VPN. Отсюда можно отключиться, не открывая приложение.</p>
+      <div class="sect">Движок</div>
+      <div class="list">
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-cpu" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Ядро</p><p class="ss">xray-core</p></div></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-versions" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Версия</p><p class="ss">Sidewire 1.0</p></div></div>
+      </div>
+    </section>
+  </div>
+  <nav class="nav">
+    <button class="tab" data-view="flow" data-active="true"><i class="ti ti-shield-half-filled"></i><span>Подключение</span></button>
+    <button class="tab" data-view="apps"><i class="ti ti-apps"></i><span>Приложения</span></button>
+    <button class="tab" data-view="more"><i class="ti ti-settings"></i><span>Ещё</span></button>
+  </nav>
+  <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toastMsg"></span></div>
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet-catalog"><div class="grab"></div><h2 id="catTitle">Добавить приложения</h2><p class="lead" id="catLead">Нажмите на приложение, чтобы добавить.</p><div class="search" style="margin:0 0 4px"><i class="ti ti-search"></i><input id="catSearch" placeholder="Поиск" spellcheck="false"></div><div id="catalogWrap"></div><button class="btn quiet wide" style="margin-top:14px" data-close="1">Готово</button></div>
+  <div class="sheet" id="sheet-add"><div class="grab"></div><h2>Добавить подписку</h2>
+    <div class="field" style="margin-bottom:12px"><input id="addLink" placeholder="Ссылка на подписку" spellcheck="false"><button class="btn" data-act="addLinkGo">Добавить</button></div>
+    <button class="mrow" data-act="addClip"><i class="ti ti-clipboard"></i> Вставить из буфера обмена</button>
+    <button class="mrow" data-act="addQr"><i class="ti ti-qrcode"></i> QR-код</button>
+    <button class="mrow" data-act="addManual"><i class="ti ti-pencil"></i> Ручной ввод (vless://)</button>
+    <button class="btn quiet wide" style="margin-top:14px" data-close="1">Закрыть</button>
+  </div>
+  <div class="sheet" id="sheet-submenu"><div class="grab"></div><button class="mrow" data-act="smupdate"><i class="ti ti-refresh"></i> Обновить подписку</button><button class="mrow" data-act="smping"><i class="ti ti-gauge"></i> Проверить пинг</button><button class="mrow danger" data-act="smdelete"><i class="ti ti-trash"></i> Удалить подписку</button></div>
+  <div class="sheet" id="sheet-qr"><div class="grab"></div><h2>QR-код</h2><p class="lead">Отсканируйте QR-код конфигурации, чтобы добавить сервер.</p><button class="btn wide" data-act="addQr">Сканировать</button><button class="btn quiet wide" style="margin-top:9px" data-close="1">Закрыть</button></div>
+  <div class="dialog" id="confirm"><div class="card"><h3 id="cfTitle">Подтвердите</h3><p id="cfText"></p><div class="btns"><button class="btn quiet" data-act="cfcancel">Отмена</button><button class="btn danger" id="cfOk" data-act="cfok">ОК</button></div></div></div>
+  <div class="perm" id="perm"><div class="inner"><div class="shield"><i class="ti ti-shield-lock"></i></div><h2>Добро пожаловать</h2><p class="lead">Sidewire направляет трафик через туннель и умеет выводить отдельные приложения в обход. При первом подключении Android попросит разрешение на VPN.</p><ul><li><i class="ti ti-check"></i><span>Подписка добавляется по ссылке</span></li><li><i class="ti ti-check"></i><span>Раздельный туннель — на уровне VpnService</span></li><li><i class="ti ti-check"></i><span>Ядро xray, всё на устройстве</span></li></ul></div><div class="foot"><button class="btn wide" data-act="permok">Начать</button><p class="sysnote">Разрешение VPN появится при подключении</p></div></div>
+</div>
+
+<script>
+function has(){return typeof Native!=='undefined';}
+function esc(s){return (s+'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+var buzz=function(ms){try{navigator.vibrate&&navigator.vibrate(ms||8)}catch(e){}};
+var $=function(s){return document.querySelector(s);},$$=function(s){return [].slice.call(document.querySelectorAll(s));};
+var BANKS=['com.tbank','com.idamob.tinkoff.android','ru.sberbankmobile','ru.vtb24.mobilebanking','ru.gosuslugi','ru.alfabank','com.idamob'];
+
+var S={conn:'off',selected:'',serverName:'',profiles:[],apps:[],settings:{kill:true,dns:true,ads:false,lan:true,notif:true},collapsed:{}};
+try{var sv=JSON.parse(localStorage.getItem('sw_ui')||'{}');if(sv.settings)S.settings=Object.assign(S.settings,sv.settings);if(sv.collapsed)S.collapsed=sv.collapsed;}catch(e){}
+function saveUI(){try{localStorage.setItem('sw_ui',JSON.stringify({settings:S.settings,collapsed:S.collapsed}));}catch(e){}}
+var tid;function toast(m){$('#toastMsg').textContent=m;$('#toast').dataset.open='true';clearTimeout(tid);tid=setTimeout(function(){$('#toast').dataset.open='false';},1900);}
+window.onToast=toast;
+
+var upSec=0,upTimer=null;
+function fmt(s){return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2);}
+function startTimer(){stopTimer();upTimer=setInterval(function(){upSec++;var t=$('#tm');if(t)t.textContent=fmt(upSec);},1000);}
+function stopTimer(){clearInterval(upTimer);}
+
+/* ---------- render ---------- */
+function setConnUI(){
+  var st=S.conn;
+  $('#connect').dataset.s=st;$('#badge').dataset.s=st;
+  $('#badgeTxt').textContent={on:'CONNECTED',off:'OFFLINE',connecting:'…',error:'ERROR'}[st];
+  var map={on:'Защищено',off:'Отключено',connecting:'Подключаюсь…',error:'Ошибка'};
+  $('#cstatus').innerHTML=st==='on'?(map.on+' <span class="tm" id="tm">'+fmt(upSec)+'</span>'):map[st];
+  $('#cserver').innerHTML=(st==='off'||!S.serverName)?'':'<span class="fl">🌐</span> '+esc(S.serverName);
+  $('#nBody').textContent=st==='on'?'Защищено':'Отключено';
+  $$('.srow').forEach(function(r){r.classList.toggle('act',r.dataset.guid===S.selected);});
+  $$('.subblock').forEach(function(b){b.dataset.activesub=!!b.querySelector('.srow.act');});
+  if(st==='on'){$('#dl').textContent='включён';$('#ul').textContent='xray';}else{$('#dl').textContent='—';$('#ul').textContent='—';}
+}
+var pings={};
+function pingBadge(g){var ms=pings[g];if(pingBusy&&(ms===undefined||ms===0))return '<span class="srvping meas" style="margin-left:auto"><span class="d"></span></span>';if(ms===undefined||ms===0)return '<span style="margin-left:auto"></span>';if(ms<0)return '<span class="srvping dead" style="margin-left:auto"><span class="d"></span>н/д</span>';var c=ms<400?'good':ms<900?'mid':'bad';return '<span class="srvping '+c+'" style="margin-left:auto"><span class="d"></span>'+ms+' мс</span>';}
+function srvRow(s){
+  return '<div class="srow'+(s.sel?' act':'')+'" data-node="'+esc(s.guid)+'" data-guid="'+esc(s.guid)+'"><div style="flex:1;min-width:0"><p class="nm2">'+esc(s.name)+'</p><p class="mt2">'+esc(s.type||'VLESS')+'</p></div>'+pingBadge(s.guid)+'<i class="ti ti-chevron-right chev" style="margin-left:8px"></i></div>';
+}
+function paintSubs(){
+  var imp=$('#subimport');if(imp)imp.style.display=S.profiles.length?'none':'flex';
+  var q=($('#nodeSearch').value||'').toLowerCase();
+  if(!S.profiles.length){$('#subsArea').innerHTML='<div class="subblock"><div class="empty" style="padding:16px;text-align:center">Список пуст — вставьте ссылку на подписку выше</div></div>';return;}
+  $('#subsArea').innerHTML=S.profiles.map(function(p){
+    var exp=!S.collapsed[p.id];
+    var srv=p.servers.filter(function(s){return s.name.toLowerCase().indexOf(q)>=0;});
+    var act=p.servers.some(function(s){return s.sel;});
+    var m=p.meta||{},GB=1073741824;
+    var totalG=m.total?m.total/GB:0,usedG=m.used?m.used/GB:0,remG=totalG?Math.max(0,totalG-usedG):0;
+    var tf=totalG?Math.max(2,Math.min(100,remG/totalG*100)):100;
+    var trafV=totalG?(remG.toFixed(1)+' / '+totalG.toFixed(0)+' ГБ'):(m.used?(usedG.toFixed(1)+' ГБ · ∞'):(p.servers.length+' серв.'));
+    var now=Date.now()/1000,days=m.expire?Math.max(0,Math.floor((m.expire-now)/86400)):0;
+    var dstr=m.expire?new Date(m.expire*1000).toLocaleDateString('ru-RU'):'—';
+    var df=m.expire?Math.max(2,Math.min(100,days/90*100)):(act?100:6);
+    var srokV=m.expire?(days+' дн · '+dstr):(act?'активна':'—');
+    return '<div class="subblock" data-activesub="'+act+'">'+
+      '<div class="subhdr"><button class="subtoggle" data-subtoggle="'+p.id+'"><i class="ti ti-chevron-'+(exp?'down':'right')+'"></i><div class="subti"><p class="snm">'+esc(p.name)+'</p><p class="sdt">'+p.servers.length+' серверов · автообновление 1 ч</p></div></button>'+
+      '<button class="sic" data-subrefresh="'+p.id+'" aria-label="Обновить"><i class="ti ti-refresh"></i></button>'+
+      '<button class="sic" data-subping="'+p.id+'" aria-label="Пинг"><i class="ti ti-gauge"></i></button>'+
+      '<button class="sic" data-submenu="'+p.id+'" aria-label="Меню"><i class="ti ti-dots-vertical"></i></button></div>'+
+      '<div class="subinfo"><div class="sbrow"><span class="sbl">Трафик</span><div class="sbbar"><b style="width:'+tf+'%"></b></div><span class="sbv">'+trafV+'</span></div>'+
+      '<div class="sbrow"><span class="sbl">Срок</span><div class="sbbar time"><b style="width:'+df+'%"></b></div><span class="sbv">'+srokV+'</span></div></div>'+
+      (exp?'<div class="subservers">'+(srv.length?srv.map(srvRow).join(''):'<p class="empty" style="padding:11px 14px">нет серверов</p>')+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+function chip(a){return '<span class="chip"><u style="'+(a.icon?'background:transparent;padding:0':'')+'">'+(a.icon?'<img src="'+a.icon+'">':esc((a.label||'?').charAt(0).toUpperCase()))+'</u>'+esc(a.label)+'</span>';}
+function paintLanes(){
+  var by=S.apps.filter(function(a){return a.trigger;});
+  var l=$('#laneDirect');if(l)l.innerHTML=by.length?by.map(chip).join(''):'<span class="empty">приложения не выбраны</span>';
+}
+function appIcon(a){return a.icon?'<img class="icn" src="'+a.icon+'">':'<div class="icn" style="background:#3a3a3a">'+esc((a.label||'?').charAt(0).toUpperCase())+'</div>';}
+function appRow(a,mode){var act=a.active!==false;var sub=act?(mode==='off'?'выключает vpn':'включает vpn'):'приостановлено';return '<div class="row static">'+appIcon(a)+'<div style="flex:1;min-width:0"><p class="tt">'+esc(a.label)+'</p><p class="ss">'+sub+'</p></div><button class="sw" role="switch" aria-checked="'+act+'" data-actv="'+esc(a.pkg)+'"><b></b></button><button data-rmc="'+esc(a.pkg)+'" data-mode="'+mode+'" aria-label="Удалить" style="background:none;border:none;color:#e5484d;font-size:20px;padding:6px 4px;margin-left:6px;cursor:pointer"><i class="ti ti-trash"></i></button></div>';}
+function emptyRow(){return '<div class="row static"><p class="ss" style="padding:8px 2px">пусто — добавьте приложения</p></div>';}
+function paintApps(){
+  var on=S.apps.filter(function(a){return a.on;});
+  var off=S.apps.filter(function(a){return a.off;});
+  var lon=$('#onList');if(lon)lon.innerHTML=on.length?on.map(function(a){return appRow(a,'on');}).join(''):emptyRow();
+  var loff=$('#offList');if(loff)loff.innerHTML=off.length?off.map(function(a){return appRow(a,'off');}).join(''):emptyRow();
+}
+function paintCatalog(){
+  var q=($('#catSearch').value||'').toLowerCase();
+  var list=S.apps.filter(function(a){return !a.on&&!a.off&&a.label.toLowerCase().indexOf(q)>=0;});
+  $('#catalogWrap').innerHTML=list.length?'<div class="list">'+list.map(function(a){
+    return '<button class="row" data-add="'+esc(a.pkg)+'">'+appIcon(a)+'<div style="flex:1;min-width:0"><p class="tt">'+esc(a.label)+'</p><p class="ss">'+esc(a.pkg)+'</p></div><i class="ti ti-plus chev" style="color:var(--green)"></i></button>';
+  }).join('')+'</div>':'<div class="list"><div class="row static"><p class="ss" style="padding:8px 2px">все добавлены или ничего не найдено</p></div></div>';
+}
+function checkUA(){var b=$('#uaBanner');if(!b)return;var ok=false;try{ok=has()?Native.hasUsageAccess():true;}catch(e){ok=true;}b.style.display=ok?'none':'block';}
+function updateSettingsUI(){['kill','dns','ads','lan','notif'].forEach(function(k){var el=$('[data-set="'+k+'"]');if(el)el.setAttribute('aria-checked',!!S.settings[k]);});$('#notifPrev').dataset.open=!!S.settings.notif;}
+
+/* ---------- data ---------- */
+function reload(){
+  if(!has())return;
+  var st={};try{st=JSON.parse(Native.status());}catch(e){}
+  S.selected=st.selected||'';S.serverName=st.serverName||'';
+  if(st.running&&S.conn!=='on'){S.conn='on';upSec=0;startTimer();} else if(!st.running&&S.conn==='on'){S.conn='off';stopTimer();}
+  else if(S.conn!=='connecting')S.conn=st.running?'on':'off';
+  var subs=[];try{subs=JSON.parse(Native.subs());}catch(e){}
+  S.profiles=subs.map(function(p){return {id:p.id,name:p.name,meta:p.meta||{},servers:p.servers.map(function(s){return {guid:s.guid,name:s.name||'Без имени',type:(s.type||'VLESS').toUpperCase(),sel:s.guid===S.selected};})};});
+  subs.forEach(function(p){p.servers.forEach(function(s){if(s.ping!==undefined&&s.ping!==0)pings[s.guid]=s.ping;});});
+  paintSubs();setConnUI();
+}
+function reloadApps(force){
+  if(!has()){S.apps=[];return;}
+  // Already loaded → repaint from cache instantly (no blocking native call).
+  if(S.appsLoaded&&!force){paintLanes();paintApps();paintCatalog();return;}
+  if(!S.appsLoaded&&!S.appsLoading){$('#catalogWrap').innerHTML='<div class="list"><div class="row static"><p class="ss" style="padding:8px 2px">Загрузка приложений…</p></div></div>';}
+  if(S.appsLoading)return;
+  S.appsLoading=true;
+  try{Native.loadAppsAsync();}catch(e){S.appsLoading=false;}
+}
+window.onApps=function(jsonStr){
+  var arr=[];try{arr=JSON.parse(jsonStr)||[];}catch(e){arr=[];}
+  S.apps=arr;S.appsLoaded=true;S.appsLoading=false;
+  paintLanes();paintApps();paintCatalog();checkUA();
+};
+
+/* ---------- actions ---------- */
+window.onNativeState=function(r){if(r&&S.conn!=='on'){S.conn='on';upSec=0;startTimer();toast('Туннель поднят');}else if(!r){S.conn='off';stopTimer();}setConnUI();};
+function poll(){if(!has())return;var st={};try{st=JSON.parse(Native.status());}catch(e){return;}S.selected=st.selected||'';S.serverName=st.serverName||'';if(S.conn!=='connecting'){var on=!!st.running;if(on&&S.conn!=='on'){S.conn='on';upSec=upSec||0;startTimer();}if(!on&&S.conn==='on'){S.conn='off';stopTimer();}S.conn=on?'on':(S.conn==='connecting'?'connecting':'off');}setConnUI();}
+function powerTap(){
+  if(!has()){toast('Запустите в приложении');return;}
+  if(S.conn==='on'){Native.disconnect();toast('Отключаю…');}
+  else{if(!S.selected){toast('Сначала выберите сервер');return;}S.conn='connecting';setConnUI();Native.connect();toast('Подключаю…');}
+  setTimeout(poll,1000);setTimeout(poll,2600);
+}
+function pickSrv(g){if(has())Native.select(g);S.selected=g;$$('.srow').forEach(function(r){r.classList.toggle('act',r.dataset.guid===g);});$$('.subblock').forEach(function(b){b.dataset.activesub=!!b.querySelector('.srow.act');});buzz();toast('Сервер выбран');}
+function setTrigger(pkg,add,mode){var a=S.apps.find(function(x){return x.pkg===pkg;});if(a){if(mode==='off'){a.off=add;if(add)a.on=false;}else{a.on=add;if(add)a.off=false;}}if(has())Native.setTrigger(pkg,add,mode);buzz();paintApps();paintCatalog();checkUA();}
+function setActive(pkg,active){var a=S.apps.find(function(x){return x.pkg===pkg;});if(a)a.active=active;if(has())Native.setAppActive(pkg,active);buzz();paintApps();}
+function updateSubs(){if(!has())return;toast('Обновляю…');Native.updateSubs();}
+function doAdd(v){if(!v){toast('Вставьте ссылку');return;}if(!has()){toast('Запустите в приложении');return;}if(!/^(happ|vless|vmess|ss|trojan|hysteria2|tuic|wireguard|https?):\/\//i.test(v)){toast('Ссылка не распознана');return;}$('#linkGo').innerHTML='…';toast('Загружаю…');Native.addSub(v);}
+function addSubLink(){doAdd($('#linkIn').value.trim());}
+window.onSubDone=function(c){$('#linkGo').innerHTML='<i class="ti ti-plus"></i>';$('#linkIn').value='';$('#addLink').value='';closeSheets();if(c>0){toast('Добавлено серверов: '+c);}else if(c===0){toast('Новых серверов нет — проверьте ссылку/устройства');}else{toast('Обновлено');}reload();};
+
+/* live speed graph */
+var lastRx=0,lastTx=0,lastT=0,gdata=[];
+function renderGraph(){var w=300,h=46,max=1;for(var i=0;i<gdata.length;i++)if(gdata[i]>max)max=gdata[i];var pts=gdata.map(function(v,i){return (i/Math.max(1,gdata.length-1)*w).toFixed(1)+','+(h-(v/max)*(h-4)-2).toFixed(1);}).join(' ');var sp=$('#spark'),sf=$('#sparkFill');if(sp)sp.setAttribute('points',pts);if(sf)sf.setAttribute('points','0,'+h+' '+pts+' '+w+','+h);}
+function pollSpeed(){if(!has())return;if(S.conn!=='on'){$('#dl').textContent='0.0';$('#ul').textContent='0.0';if(gdata.length){gdata=[];renderGraph();}lastT=0;return;}var t;try{t=JSON.parse(Native.traffic());}catch(e){return;}var now=Date.now();if(lastT){var dt=(now-lastT)/1000||1;var dl=Math.max(0,t.rx-lastRx)*8/1e6/dt,ul=Math.max(0,t.tx-lastTx)*8/1e6/dt;$('#dl').textContent=dl.toFixed(1);$('#ul').textContent=ul.toFixed(1);gdata.push(dl);if(gdata.length>44)gdata.shift();renderGraph();}lastRx=t.rx;lastTx=t.tx;lastT=now;}
+
+/* ping */
+var pingBusy=false,pingForFast=false;
+function runPing(forFast){if(!has())return;if(pingBusy){return;}pingBusy=true;pingForFast=forFast;toast(forFast?'Ищу самый быстрый…':'Проверяю пинги…');Native.pingAll();}
+window.onPing=function(finished){try{pings=JSON.parse(Native.pings());}catch(e){}paintSubs();if(finished){pingBusy=false;if(pingForFast){pingForFast=false;var best=null;for(var g in pings){if(pings[g]>0&&(best===null||pings[g]<pings[best]))best=g;}if(best){pickSrv(best);toast('Самый быстрый: '+pings[best]+' мс');}else toast('Не удалось измерить');}else toast('Пинги обновлены');}};
+
+/* ---------- sheets ---------- */
+function openSheet(n){$('#scrim').dataset.open='true';$('#sheet-'+n).dataset.open='true';}
+function closeSheets(){$('#scrim').dataset.open='false';$$('.sheet').forEach(function(s){s.dataset.open='false';});}
+var cfCb=null;function openConfirm(t,x,ok,cb){$('#cfTitle').textContent=t;$('#cfText').textContent=x;$('#cfOk').textContent=ok;cfCb=cb;$('#confirm').dataset.open='true';}
+function closeConfirm(){$('#confirm').dataset.open='false';cfCb=null;}
+
+/* ---------- events ---------- */
+var subMenuId=null;var catMode='on';
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-power],[data-node],[data-actv],[data-rmc],[data-add],[data-set],[data-pref],[data-adblock],[data-view],[data-sheet],[data-close],[data-subtoggle],[data-subrefresh],[data-subping],[data-submenu],[data-act]');
+  if(!t)return;var d=t.dataset;
+  if(d.power!==undefined){powerTap();return;}
+  if(d.node!==undefined){pickSrv(d.node);return;}
+  if(d.set!==undefined){S.settings[d.set]=!S.settings[d.set];t.setAttribute('aria-checked',S.settings[d.set]);if(d.set==='notif')$('#notifPrev').dataset.open=S.settings.notif;buzz();saveUI();toast(S.settings[d.set]?'Включено':'Выключено');return;}
+  if(d.pref!==undefined){var nv=t.getAttribute('aria-checked')!=='true';t.setAttribute('aria-checked',nv);try{Native.setSetting(d.pref,nv);}catch(e){}buzz();toast((nv?'Включено':'Выключено')+' · применится при переподключении');return;}
+  if(d.adblock!==undefined){var av=t.getAttribute('aria-checked')!=='true';t.setAttribute('aria-checked',av);try{Native.setAdBlock(av);}catch(e){}buzz();toast((av?'Реклама блокируется':'Блокировка выключена')+' · применится при переподключении');return;}
+  if(d.actv!==undefined){var _pk=d.actv,_a2=S.apps.find(function(x){return x.pkg===_pk;});var _na=!(_a2&&_a2.active!==false);setActive(_pk,_na);toast(_na?'Включено':'Приостановлено');return;}
+  if(d.rmc!==undefined){var _p=d.rmc,_m=d.mode||'on',_a=S.apps.find(function(x){return x.pkg===_p;});openConfirm('Удалить приложение?',(_a?_a.label:'Приложение')+' будет убрано из списка.','Удалить',function(){setTrigger(_p,false,_m);toast('Удалено');});return;}
+  if(d.add!==undefined){setTrigger(d.add,true,catMode);toast(catMode==='off'?'VPN будет выключаться при открытии':'VPN будет включаться при открытии');return;}
+  if(d.close!==undefined){closeSheets();return;}
+  if(d.subtoggle!==undefined){S.collapsed[d.subtoggle]=!S.collapsed[d.subtoggle];saveUI();paintSubs();setConnUI();return;}
+  if(d.subrefresh!==undefined){updateSubs();return;}
+  if(d.subping!==undefined){runPing(false);return;}
+  if(d.submenu!==undefined){subMenuId=d.submenu;openSheet('submenu');return;}
+  if(d.sheet){if(d.sheet==='catalog'){catMode=d.mode||'on';$('#catSearch').value='';var ct=$('#catTitle'),cl=$('#catLead');if(ct)ct.textContent=catMode==='off'?'Отключать VPN':'Включать VPN';if(cl)cl.textContent=catMode==='off'?'Выберите приложения, которые будут выключать VPN при открытии.':'Выберите приложения, которые будут включать VPN при открытии.';paintCatalog();}openSheet(d.sheet);return;}
+  if(d.view){switchView(d.view);return;}
+  if(d.act){handleAct(d.act);return;}
+});
+function switchView(v){$$('.tab').forEach(function(x){x.dataset.active=x.dataset.view===v;});$$('.view').forEach(function(x){x.dataset.active=x.id==='v-'+v;});$('.views').scrollTop=0;if(v==='apps'){reloadApps();checkUA();}}
+window.addEventListener('focus',function(){checkUA();});
+function handleAct(a){
+  switch(a){
+    case 'retry':powerTap();break;
+    case 'tonodes':$('#subsArea').scrollIntoView({behavior:'smooth',block:'start'});break;
+    case 'fastest':runPing(true);break;
+    case 'smping':closeSheets();runPing(false);break;
+    case 'addmenu':$('#addLink').value='';openSheet('add');break;
+    case 'addLinkGo':doAdd($('#addLink').value.trim());break;
+    case 'addClip':navigator.clipboard.readText().then(function(t){doAdd((t||'').trim());}).catch(function(){toast('Нет доступа к буферу');});break;
+    case 'addQr':closeSheets();if(has())Native.openScanner();break;
+    case 'addManual':closeSheets();$('#linkIn').focus();toast('Вставьте vless:// в поле сверху');break;
+    case 'collapseall':{var anyOpen=S.profiles.some(function(p){return !S.collapsed[p.id];});S.profiles.forEach(function(p){S.collapsed[p.id]=anyOpen;});$('#collapseAll').textContent=anyOpen?'Показать все':'Скрыть все';saveUI();paintSubs();setConnUI();break;}
+    case 'reset':openConfirm('Сбросить списки?','Все приложения будут убраны из обоих списков.','Сбросить',function(){S.apps.slice().forEach(function(a){if(a.on)setTrigger(a.pkg,false,'on');if(a.off)setTrigger(a.pkg,false,'off');});toast('Сброшено');});break;
+    case 'grantua':if(has())Native.openUsageAccess();break;
+    case 'killswitch':if(has()){Native.openVpnSettings();toast('Включите «Always-on VPN» и блокировку без VPN');}break;
+    case 'coachok':S.settings.coach=true;$('#coach').dataset.open='false';saveUI();break;
+    case 'notifdisc':if(S.conn==='on'){Native.disconnect();toast('Отключаю…');}else toast('VPN выключен');break;
+    case 'smupdate':closeSheets();updateSubs();break;
+    case 'smdelete':closeSheets();if(has())Native.removeSub(subMenuId);toast('Подписка удалена');setTimeout(reload,200);break;
+    case 'cfcancel':closeConfirm();break;
+    case 'cfok':{var cb=cfCb;closeConfirm();if(cb)cb();break;}
+    case 'permok':$('#perm').dataset.open='false';S.settings.onboarded=true;saveUI();break;
+  }
+}
+$('#scrim').addEventListener('click',closeSheets);
+$('#linkGo').addEventListener('click',addSubLink);
+$('#catSearch').addEventListener('input',paintCatalog);
+$('#nodeSearch').addEventListener('input',function(){paintSubs();setConnUI();});
+
+updateSettingsUI();
+function syncNativeSettings(){if(!has())return;$$('[data-pref]').forEach(function(el){try{el.setAttribute('aria-checked',!!Native.getSetting(el.dataset.pref));}catch(e){}});try{var ab=$('[data-adblock]');if(ab)ab.setAttribute('aria-checked',!!Native.getAdBlock());}catch(e){}}
+syncNativeSettings();
+if(!S.settings.coach)$('#coach').dataset.open='true';
+if(!S.settings.onboarded)$('#perm').dataset.open='true';
+reload();reloadApps();if(has())setTimeout(function(){Native.refreshMeta();},400);
+setInterval(poll,1600);
+setInterval(pollSpeed,1000);
+</script>
+</body>
+</html>

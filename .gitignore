@@ -1,0 +1,23 @@
+# Android / Gradle
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+build/
+/captures
+.externalNativeBuild
+.cxx/
+/.kotlin/
+*.hprof
+
+# Build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+*.log
+
+# Keystore (никогда не коммить ключи подписи!)
+*.jks
+*.keystore
