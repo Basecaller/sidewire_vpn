@@ -16,20 +16,6 @@ VPN-клиент для Android на базе ядра **Xray**, с собств
 - Kill switch (системный Always-on VPN), шифрование DNS (DoH), блокировка рекламы через AdGuard DNS
 - Скорость в уведомлении, выбор самого быстрого сервера по пингу
 
-## Сборка
-
-Требуется Android SDK (compileSdk 37, NDK) и JDK 17.
-
-1. Создайте `local.properties` в корне проекта:
-   ```properties
-   sdk.dir=C:/Path/To/Android/Sdk
-   ```
-2. Соберите APK:
-   ```bash
-   ./gradlew :app:assemblePlaystoreDebug -PABI_FILTERS=arm64-v8a
-   ```
-   Готовый APK: `app/build/outputs/apk/playstore/debug/`.
-
 ## Флейворы
 
 - `playstore` — пакет `com.sidewire.app`
