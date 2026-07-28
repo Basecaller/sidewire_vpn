@@ -6,6 +6,8 @@ VPN-клиент для Android на базе ядра **Xray**, с собств
 
 > 📥 **[Скачать последнюю версию APK](https://github.com/Basecaller/sidewire_vpn/releases/latest/download/Sidewire.apk)** (Android, arm64) · [Все релизы](https://github.com/Basecaller/sidewire_vpn/releases)
 
+> 📖 **Не разбираетесь в настройках?** Читайте понятный [ГАЙД по настройкам](docs/ГАЙД.md) — что каждая функция делает, простым языком.
+
 ## Возможности
 
 - Подключение по подписке (VLESS / VMess / Trojan / Shadowsocks / Hysteria2 / WireGuard и др.)
