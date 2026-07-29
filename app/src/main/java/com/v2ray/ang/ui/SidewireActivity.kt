@@ -15,6 +15,7 @@ import com.v2ray.ang.service.AppTriggerService
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import android.graphics.Bitmap
@@ -73,9 +74,25 @@ class SidewireActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Applies a secure-by-default baseline once (first launch): encrypted DNS (DoH),
+     * a privacy/ad-blocking resolver, domain sniffing for correct routing, and IPv6
+     * disabled to avoid leaking the real address. Runs only if the user hasn't set
+     * these — never overrides later user choices.
+     */
+    private fun applySecureDefaultsOnce() {
+        if (MmkvManager.decodeSettingsBool("sw_secure_init", false)) return
+        MmkvManager.encodeSettings(AppConfig.PREF_LOCAL_DNS_ENABLED, true)   // encrypt DNS (DoH)
+        MmkvManager.encodeSettings(AppConfig.PREF_SNIFFING_ENABLED, true)    // domain-aware routing
+        MmkvManager.encodeSettings(AppConfig.PREF_IPV6_ENABLED, false)       // prevent IPv6 leak
+        MmkvManager.encodeSettings(AppConfig.PREF_REMOTE_DNS, "https://dns.adguard-dns.com/dns-query") // privacy + ad/tracker block
+        MmkvManager.encodeSettings("sw_secure_init", true)
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        applySecureDefaultsOnce()
         web = WebView(this)
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
@@ -85,6 +102,10 @@ class SidewireActivity : ComponentActivity() {
         web.overScrollMode = WebView.OVER_SCROLL_NEVER
         web.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
         web.setBackgroundColor(0xFF0F0F10.toInt())
+        // Native feel: kill the long-press text-selection + its haptic buzz
+        web.isLongClickable = false
+        web.setOnLongClickListener { true }
+        web.isHapticFeedbackEnabled = false
         web.addJavascriptInterface(Bridge(), "Native")
         setContentView(web)
         web.loadUrl("file:///android_asset/sidewire.html")
@@ -94,6 +115,16 @@ class SidewireActivity : ComponentActivity() {
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
         MessageUtil.sendMsg2Service(this, AppConfig.MSG_REGISTER_CLIENT, "")
+
+        // Back button: let the WebView UI handle it first (close a sheet, return to
+        // the main screen); only exit the app when there's nothing left to dismiss.
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                web.evaluateJavascript("(window.onBack&&window.onBack())?'1':'0'") { result ->
+                    if (result != "\"1\"" && result != "1") finish()
+                }
+            }
+        })
     }
 
     override fun onResume() {
@@ -521,6 +552,29 @@ class SidewireActivity : ComponentActivity() {
             }
         }
 
+        @JavascriptInterface
+        fun openRouting() {
+            runOnUiThread {
+                startActivity(Intent(this@SidewireActivity, RoutingSettingActivity::class.java))
+            }
+        }
+
+        @JavascriptInterface
+        fun openLogs() {
+            runOnUiThread {
+                startActivity(Intent(this@SidewireActivity, LogcatActivity::class.java))
+            }
+        }
+
+        @JavascriptInterface
+        fun openSource() {
+            runOnUiThread {
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Basecaller/sidewire_vpn")))
+                } catch (_: Exception) {}
+            }
+        }
+
         // --- Settings toggles ---
         @JavascriptInterface
         fun getSetting(key: String): Boolean = MmkvManager.decodeSettingsBool(key, false)
@@ -528,6 +582,41 @@ class SidewireActivity : ComponentActivity() {
         @JavascriptInterface
         fun setSetting(key: String, on: Boolean) {
             MmkvManager.encodeSettings(key, on)
+        }
+
+        @JavascriptInterface
+        fun getSettingStr(key: String): String = MmkvManager.decodeSettingsString(key).orEmpty()
+
+        @JavascriptInterface
+        fun setSettingStr(key: String, value: String) {
+            MmkvManager.encodeSettings(key, value)
+        }
+
+        /** Show/hide the VPN notification (hidden = minimal quiet channel). Applies on reconnect. */
+        @JavascriptInterface
+        fun setNotifHidden(hidden: Boolean) {
+            MmkvManager.encodeSettings("sw_notif_hidden", hidden)
+        }
+
+        /** Toggle the speed line in the notification and apply it live (no reconnect). */
+        @JavascriptInterface
+        fun setSpeedNotif(on: Boolean) {
+            MmkvManager.encodeSettings(AppConfig.PREF_SPEED_ENABLED, on)
+            MessageUtil.sendMsg2Service(this@SidewireActivity, AppConfig.MSG_REFRESH_SPEED, "")
+        }
+
+        /** Opens the system notification settings for this app (real on/off of the VPN notification). */
+        @JavascriptInterface
+        fun openNotifSettings() {
+            runOnUiThread {
+                try {
+                    val i = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    i.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                    startActivity(i)
+                } catch (_: Exception) {
+                    try { startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)) } catch (_: Exception) {}
+                }
+            }
         }
 
         @JavascriptInterface

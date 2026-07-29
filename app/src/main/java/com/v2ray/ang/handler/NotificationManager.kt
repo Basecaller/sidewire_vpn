@@ -28,6 +28,7 @@ import kotlin.math.min
 
 object NotificationManager {
     private const val NOTIFICATION_ID = 1
+    private const val QUIET_CHANNEL_ID = "sidewire_quiet"
     private const val NOTIFICATION_PENDING_INTENT_CONTENT = 0
     private const val NOTIFICATION_PENDING_INTENT_STOP_V2RAY = 1
     private const val NOTIFICATION_PENDING_INTENT_RESTART_V2RAY = 2
@@ -155,7 +156,16 @@ object NotificationManager {
         chan.importance = NotificationManager.IMPORTANCE_NONE
         chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
         getNotificationManager()?.createNotificationChannel(chan)
-        return channelId
+
+        // A "hidden" channel used when the user turns notifications off: minimal
+        // importance, no badge, secret on lock screen (as hidden as a foreground
+        // service notification is allowed to be).
+        val quiet = NotificationChannel(QUIET_CHANNEL_ID, "$channelName (скрытое)", NotificationManager.IMPORTANCE_MIN)
+        quiet.setShowBadge(false)
+        quiet.lockscreenVisibility = Notification.VISIBILITY_SECRET
+        getNotificationManager()?.createNotificationChannel(quiet)
+
+        return if (MmkvManager.decodeSettingsBool("sw_notif_hidden", false)) QUIET_CHANNEL_ID else channelId
     }
 
     /**

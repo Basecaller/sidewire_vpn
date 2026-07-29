@@ -11,7 +11,7 @@
 <style>
 :root{
   --ease-out:cubic-bezier(0.23,1,0.32,1);--ease-io:cubic-bezier(0.77,0,0.175,1);--ease-drawer:cubic-bezier(0.32,0.72,0,1);--spring:cubic-bezier(0.34,1.56,0.64,1);
-  --bg:#232326;--bg-2:#1d1d20;--bg-3:#191919;
+  --bg:#080a0d;--bg-2:#0b0d11;--bg-3:#06070a;
   --card:rgba(255,255,255,.055);--card-2:rgba(255,255,255,.085);--card-hover:rgba(255,255,255,.12);
   --line:rgba(255,255,255,.09);--line-soft:rgba(255,255,255,.06);
   --text:#fff;--soft:rgba(255,255,255,.62);--muted:rgba(255,255,255,.32);
@@ -57,9 +57,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font)}
 .connect[data-s="connecting"] .arc{opacity:1}.connect[data-s="connecting"] .dome .pico{color:var(--amber)}
 @media (prefers-reduced-motion:no-preference){ .connect[data-s="connecting"] .arc{animation:spin .9s linear infinite} }
 @keyframes spin{to{transform:rotate(360deg)}}
-.cstatus{font-size:17px;font-weight:600;margin:18px 0 0;letter-spacing:-.2px}
-.cstatus .tm{color:var(--green);font-family:var(--mono);font-weight:500;margin-left:4px}
+.cstatus{font-size:11px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--soft);display:flex;align-items:center;justify-content:center;gap:8px;margin:20px 0 0}
+.cstatus .pip{width:6px;height:6px;border-radius:50%;background:var(--muted);transition:background .3s}
 .connect[data-s="on"] .cstatus{color:var(--green)}
+.connect[data-s="on"] .cstatus .pip{background:var(--green);box-shadow:0 0 10px 1px var(--green);animation:blink 2.4s ease-in-out infinite}
+.connect[data-s="connecting"] .cstatus .pip{background:var(--amber);box-shadow:0 0 10px 1px var(--amber)}
+.connect[data-s="error"] .cstatus .pip{background:var(--red)}
+.ctimer{font-family:var(--mono);font-size:34px;font-weight:500;letter-spacing:1.5px;margin:9px 0 0;color:var(--text)}
+.connect:not([data-s="on"]) .ctimer{font-size:18px;color:var(--muted)}
+@keyframes blink{50%{opacity:.35}}
 .cserver{font-family:var(--mono);font-size:12px;color:var(--soft);margin:6px 0 0;display:flex;align-items:center;justify-content:center;gap:7px}
 .cserver .fl{font-size:15px}
 .speeds{display:flex;gap:9px;margin-top:16px}
@@ -98,7 +104,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font)}
 .subtoggle{display:flex;align-items:center;gap:10px;flex:1;min-width:0;background:0;border:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
 .subtoggle>i{color:var(--soft);font-size:18px;flex:0 0 auto}
 .subti{min-width:0}
-.snm{font-size:14.5px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snm{font-size:14.5px;font-weight:600;margin:0;white-space:normal;overflow:visible;word-break:break-word;line-height:1.3}
 .sdt{font-family:var(--mono);font-size:9px;color:var(--muted);margin:3px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sic{width:33px;height:33px;border-radius:9px;background:var(--card-2);border:1px solid var(--line);color:var(--soft);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;transition:transform .18s var(--spring)}
 .sic:active{transform:scale(.86)}
@@ -109,7 +115,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font)}
 .sbbar b{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green-2),var(--green));transition:width .6s var(--ease-out)}
 .sbbar.time b{background:linear-gradient(90deg,#5aa9ff,#8fd0ff)}
 .sbrow .sbv{font-family:var(--mono);font-size:10px;color:var(--soft);flex:0 0 auto;text-align:right;min-width:86px}
-.subservers{border-top:1px solid var(--line-soft)}
+.subwrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .32s var(--ease-out)}
+.subblock[data-collapsed="1"] .subwrap{grid-template-rows:0fr}
+.subservers{border-top:1px solid var(--line-soft);overflow:hidden;min-height:0}
+.subblock[data-collapsed="1"] .subservers{border-top-color:transparent}
+.subtoggle>i{transition:transform .3s var(--ease-out)}
+.subblock[data-collapsed="1"] .subtoggle>i{transform:rotate(-90deg)}
 .srow{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;transition:background .14s,transform .16s var(--ease-out);border-left:3px solid transparent}
 .srow:active{transform:scale(.995)}
 .srow+.srow{border-top:1px solid var(--line-soft)}
@@ -167,6 +178,47 @@ img.icn{object-fit:cover;background:#3a3a3a}
 .tab i{font-size:21px;transition:transform .24s var(--spring)}
 .tab span{font-size:9.5px;font-weight:500}
 .tab[data-active="true"]{color:var(--text)}.tab[data-active="true"] i{transform:translateY(-2px)}
+
+/* ===== Liquid Glass retheme (visual only, markup/logic unchanged) ===== */
+.screen{background:radial-gradient(135% 100% at 50% -8%,#16181d 0%,#0a0b0e 48%,#060709 100%)}
+.screen::before{background:radial-gradient(120% 90% at 50% -14%,rgba(62,224,138,.11),transparent 60%);height:360px}
+.subblock,.list,.lane,.graph,.spd,.coach,.errbox{background:rgba(255,255,255,.05);backdrop-filter:blur(22px) saturate(115%);-webkit-backdrop-filter:blur(22px) saturate(115%);border:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.07),0 22px 46px -30px rgba(0,0,0,.85)}
+.subblock[data-activesub="true"]{box-shadow:inset 0 0 0 1px rgba(62,224,138,.42),0 22px 46px -30px rgba(0,0,0,.85)}
+.gear,.sic,.subimport .ib,.subimport .sfield,.badge,.chip,.lane-badge{backdrop-filter:blur(14px) saturate(120%);-webkit-backdrop-filter:blur(14px) saturate(120%)}
+.gear,.sic,.subimport .ib{background:rgba(255,255,255,.06);border:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 0 0 1px rgba(255,255,255,.11)}
+.subimport .ib.go{background:var(--green);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.subimport .sfield{background:rgba(255,255,255,.045);border:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.nav{background:rgba(9,11,14,.62);backdrop-filter:blur(26px) saturate(120%);-webkit-backdrop-filter:blur(26px) saturate(120%);border-top:1px solid rgba(255,255,255,.08)}
+.dial .rimg{border-width:1px;border-color:rgba(255,255,255,.4)}
+.connect[data-s="on"] .rimg{border-color:rgba(142,242,208,.55);box-shadow:0 0 48px -6px rgba(62,224,138,.5)}
+.row+.row,.srow+.srow{border-color:rgba(255,255,255,.05)}
+.sw{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.spd,.graph{border-radius:16px}
+.subblock{border-radius:18px}
+/* header: gear left · Sidewire centered · + right */
+.appbar .logo{display:none}
+.appbar #badge{display:none}
+.appbar h1{flex:1;text-align:center}
+.appbar .gear[data-view="more"]{margin-left:0}
+.row .rv{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--soft);white-space:nowrap}
+.row .rv+.chev{margin-left:8px}
+.statrow{display:flex;justify-content:space-between;align-items:center;padding:13px 4px;border-bottom:1px solid var(--line-soft);font-size:14px;color:var(--soft)}
+.statrow:last-of-type{border-bottom:0}
+.statrow b{font-family:var(--mono);font-weight:500;color:var(--green)}
+/* ===== Light theme ===== */
+body.light{--bg:#eef1f5;--bg-2:#e6eaf0;--bg-3:#e9edf3;--card:rgba(0,0,0,.038);--card-2:rgba(0,0,0,.06);--card-hover:rgba(0,0,0,.09);--line:rgba(0,0,0,.1);--line-soft:rgba(0,0,0,.06);--text:#0e1216;--soft:rgba(0,0,0,.56);--muted:rgba(0,0,0,.36);--green:#12b877;--green-2:#0e9d64;--green-dim:rgba(18,184,119,.12);--green-line:rgba(18,184,119,.42)}
+body.light .screen{background:radial-gradient(135% 100% at 50% -8%,#f6f8fb 0%,#eaeef4 55%,#e4e8ef 100%)}
+body.light .screen::before{background:radial-gradient(120% 90% at 50% -14%,rgba(18,184,119,.1),transparent 60%)}
+body.light .subblock,body.light .list,body.light .lane,body.light .graph,body.light .spd,body.light .coach,body.light .errbox{background:rgba(255,255,255,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 0 0 1px rgba(0,0,0,.06),0 18px 40px -28px rgba(0,0,0,.22)}
+body.light .gear,body.light .sic,body.light .subimport .ib,body.light .badge,body.light .subimport .sfield{background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+body.light .nav{background:rgba(240,243,247,.82);border-top:1px solid rgba(0,0,0,.08)}
+body.light .sheet{background:rgba(248,250,252,.94);color:var(--text)}
+body.light .dial .rimg{border-color:rgba(0,0,0,.22)}
+body.light .sw{background:rgba(0,0,0,.12)}
+body.light .sw b{background:#fff}
+/* native feel: no text selection / callout, inputs stay editable */
+body,.screen{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
 .field{display:flex;gap:9px}
 .field input{flex:1;height:42px;border-radius:11px;border:1px solid var(--line);background:var(--bg-2);padding:0 13px;font-family:var(--mono);font-size:12px;color:var(--text);outline:0}
 .field input::placeholder{color:var(--muted)}
@@ -198,6 +250,11 @@ img.icn{object-fit:cover;background:#3a3a3a}
 .sheet::-webkit-scrollbar{display:none}
 .sheet[data-open="true"]{transform:translateY(0)}
 .grab{width:38px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 15px}
+.grab{padding:8px 40px;box-sizing:content-box;margin:-8px auto 7px;cursor:pointer}
+#sheet-catalog{display:flex;flex-direction:column;height:82vh;max-height:82vh;overflow:hidden}
+#sheet-catalog>*{flex:0 0 auto}
+#sheet-catalog>#catalogWrap{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:120px;scrollbar-width:none}
+#sheet-catalog>#catalogWrap::-webkit-scrollbar{display:none}
 .sheet h2{font-size:20px;font-weight:700;letter-spacing:-.3px;margin:0 2px 6px}
 .sheet .lead{font-size:12.5px;color:var(--soft);margin:0 2px 15px;line-height:1.5}
 .step{display:flex;gap:12px;padding:12px 2px}
@@ -210,6 +267,9 @@ img.icn{object-fit:cover;background:#3a3a3a}
 .mrow i{font-size:21px;color:var(--soft);width:24px;text-align:center}
 .mrow.danger{color:var(--red)}.mrow.danger i{color:var(--red)}
 .mrow+.mrow{border-top:1px solid var(--line-soft)}
+.mrow .chk{color:var(--green);opacity:0;flex:0 0 auto;font-size:18px}
+.mrow[data-cur="1"] .chk{opacity:1}
+.mrow[data-cur="1"]{color:var(--green)}
 .qrbox{aspect-ratio:1;max-width:210px;margin:2px auto 0;border-radius:18px;background:#0c0c0e;position:relative;overflow:hidden;border:1px solid var(--line)}
 .qrbox .corner{position:absolute;width:34px;height:34px;border:3px solid var(--green)}
 .qrbox .tl{top:14px;left:14px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}.qrbox .tr{top:14px;right:14px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}.qrbox .bl{bottom:14px;left:14px;border-right:0;border-top:0;border-radius:0 0 0 8px}.qrbox .br{bottom:14px;right:14px;border-left:0;border-top:0;border-radius:0 0 8px 0}
@@ -256,7 +316,8 @@ img.icn{object-fit:cover;background:#3a3a3a}
         <button class="dial" id="power" data-power="1" aria-label="Переключить VPN"><span class="rimg"></span><span class="arc"></span>
           <span class="dome"><svg class="pico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="12"/><path d="M6.4 6.4a8 8 0 1 0 11.2 0"/></svg></span>
         </button>
-        <p class="cstatus" id="cstatus" aria-live="polite">Отключено</p>
+        <p class="cstatus" id="cstatus" aria-live="polite"><span class="pip"></span>Отключено</p>
+        <p class="ctimer" id="ctimer">—</p>
         <p class="cserver" id="cserver"></p>
         <div class="graph">
           <div class="gtop"><span class="gdl"><i class="ti ti-arrow-down"></i> <span id="dl">0.0</span> <small>Мбит/с</small></span><span class="gul"><span id="ul">0.0</span> <small>Мбит/с</small> <i class="ti ti-arrow-up"></i></span></div>
@@ -286,21 +347,45 @@ img.icn{object-fit:cover;background:#3a3a3a}
       <div class="bulk" style="margin-top:18px"><button data-act="reset"><i class="ti ti-trash"></i>Сбросить всё</button></div>
     </section>
     <section class="view" id="v-more">
-      <div class="sect">Защита</div>
+      <div class="sect">Основное</div>
       <div class="list">
-        <div class="row" data-act="killswitch"><div class="icn" style="background:#3a3a3a"><i class="ti ti-plug-off" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Kill switch</p><p class="ss">always-on vpn · системная блокировка</p></div><i class="ti ti-chevron-right" style="color:#666"></i></div>
-        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-shield-half" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Шифровать DNS</p><p class="ss">doh · шифрование запросов</p></div><button class="sw" data-pref="pref_local_dns_enabled" role="switch" aria-checked="false"><b></b></button></div>
-        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-ad-off" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Блокировать рекламу</p><p class="ss">adguard dns</p></div><button class="sw" data-adblock role="switch" aria-checked="false"><b></b></button></div>
-        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-gauge" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Скорость в уведомлении</p><p class="ss">показывать трафик в реальном времени</p></div><button class="sw" data-pref="pref_speed_enabled" role="switch" aria-checked="false"><b></b></button></div>
+        <div class="row" data-act="killswitch"><div class="icn" style="background:#3a3a3a"><i class="ti ti-plug-off" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Kill switch</p><p class="ss">Если VPN отвалится — интернет отключится, чтобы данные не ушли напрямую</p></div><i class="ti ti-chevron-right" style="color:#666"></i></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-shield-half" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Шифровать DNS</p><p class="ss">Прячет от провайдера, какие сайты вы открываете</p></div><button class="sw" data-pref="pref_local_dns_enabled" role="switch" aria-checked="false"><b></b></button></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-ad-off" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Блокировать рекламу</p><p class="ss">Режет рекламу и трекеры на уровне сети (через AdGuard DNS)</p></div><button class="sw" data-adblock role="switch" aria-checked="false"><b></b></button></div>
       </div>
+
       <div class="sect">Уведомление</div>
-      <div class="list"><div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-bell" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Постоянное уведомление</p><p class="ss">со шторки, кнопка отключения</p></div><button class="sw" data-set="notif" role="switch" aria-checked="true"><b></b></button></div></div>
-      <div class="notif" id="notifPrev"><div class="nt"><div class="nq"><i class="ti ti-shield-half-filled"></i></div><span class="nname">Sidewire</span><span class="nmeta" id="nMeta">VPN активен</span></div><p class="nbody" id="nBody">Защищено</p><p class="nsub" id="nSub">ядро xray</p><button class="nact" data-act="notifdisc">Отключить</button></div>
-      <p class="hint">Android требует уведомление, пока работает VPN. Отсюда можно отключиться, не открывая приложение.</p>
-      <div class="sect">Движок</div>
+      <div class="list">
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-gauge" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Показывать скорость</p><p class="ss">Текущая скорость интернета в шторке — применяется сразу</p></div><button class="sw" data-speed data-pref="pref_speed_enabled" role="switch" aria-checked="false"><b></b></button></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-bell" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Уведомления</p><p class="ss">Показывать значок VPN в шторке уведомлений</p></div><button class="sw" data-notif role="switch" aria-checked="true"><b></b></button></div>
+      </div>
+      <p class="hint">Выключение прячет уведомление максимально (без иконки в статус-баре). Полностью убрать его Android не даёт, пока работает VPN. Применяется при переподключении.</p>
+
+      <div class="sect">Интерфейс</div>
+      <div class="list">
+        <div class="row" data-sheet="theme"><div class="icn" style="background:#3a3a3a"><i class="ti ti-palette" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Тема оформления</p><p class="ss" id="themeVal">Как в системе</p></div><i class="ti ti-chevron-right" style="color:#666"></i></div>
+      </div>
+
+      <div class="sect">Туннель</div>
+      <div class="list">
+        <div class="row" data-sheet="routing"><div class="icn" style="background:#3a3a3a"><i class="ti ti-route" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Маршрутизация</p><p class="ss" id="routeVal">Стандартно</p></div><i class="ti ti-chevron-right" style="color:#666"></i></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-wave-square" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Использовать фрагментирование</p><p class="ss">Разбивает трафик на части — помогает обойти блокировки провайдера</p></div><button class="sw" data-pref="pref_fragment_enabled" role="switch" aria-checked="false"><b></b></button></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-stack-2" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Использовать Mux</p><p class="ss">Объединяет соединения в одно — иногда быстрее, но не всегда</p></div><button class="sw" data-pref="pref_mux_enabled" role="switch" aria-checked="false"><b></b></button></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-network" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Разрешить IPv6</p><p class="ss">Лучше держать выключенным — так меньше шанс раскрыть реальный IP</p></div><button class="sw" data-pref="pref_ipv6_enabled" role="switch" aria-checked="false"><b></b></button></div>
+        <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-world-search" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Определение домена</p><p class="ss">Распознаёт сайт по имени, чтобы правильно применить маршрутизацию</p></div><button class="sw" data-pref="pref_sniffing_enabled" role="switch" aria-checked="false"><b></b></button></div>
+      </div>
+
+      <div class="sect">Другое</div>
+      <div class="list">
+        <div class="row" data-sheet="stats"><div class="icn" style="background:#3a3a3a"><i class="ti ti-chart-bar" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Статистика</p><p class="ss">Сколько данных израсходовано за текущее подключение</p></div><i class="ti ti-chevron-right" style="color:#666"></i></div>
+        <div class="row" data-act="logs"><div class="icn" style="background:#3a3a3a"><i class="ti ti-file-text" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Логи</p><p class="ss">Технический журнал — пригодится, если что-то не работает</p></div><i class="ti ti-chevron-right" style="color:#666"></i></div>
+      </div>
+
+      <div class="sect">О программе</div>
       <div class="list">
         <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-cpu" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Ядро</p><p class="ss">xray-core</p></div></div>
         <div class="row static"><div class="icn" style="background:#3a3a3a"><i class="ti ti-versions" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Версия</p><p class="ss">Sidewire 1.0</p></div></div>
+        <div class="row" data-act="source"><div class="icn" style="background:#3a3a3a"><i class="ti ti-brand-github" style="font-weight:400"></i></div><div style="flex:1"><p class="tt">Исходный код</p><p class="ss">GitHub · GPL-3.0</p></div><i class="ti ti-external-link" style="color:#666"></i></div>
       </div>
     </section>
   </div>
@@ -321,6 +406,24 @@ img.icn{object-fit:cover;background:#3a3a3a}
   </div>
   <div class="sheet" id="sheet-submenu"><div class="grab"></div><button class="mrow" data-act="smupdate"><i class="ti ti-refresh"></i> Обновить подписку</button><button class="mrow" data-act="smping"><i class="ti ti-gauge"></i> Проверить пинг</button><button class="mrow danger" data-act="smdelete"><i class="ti ti-trash"></i> Удалить подписку</button></div>
   <div class="sheet" id="sheet-qr"><div class="grab"></div><h2>QR-код</h2><p class="lead">Отсканируйте QR-код конфигурации, чтобы добавить сервер.</p><button class="btn wide" data-act="addQr">Сканировать</button><button class="btn quiet wide" style="margin-top:9px" data-close="1">Закрыть</button></div>
+  <div class="sheet" id="sheet-routing"><div class="grab"></div><h2>Маршрутизация</h2>
+    <p class="lead">Как ядро выбирает маршрут по доменам. «Стандартно» подходит большинству.</p>
+    <button class="mrow" data-route="IPIfNonMatch"><i class="ti ti-route"></i><span style="flex:1">Стандартно</span><i class="ti ti-check chk"></i></button>
+    <button class="mrow" data-route="AsIs"><i class="ti ti-world"></i><span style="flex:1">Только по домену — быстрее</span><i class="ti ti-check chk"></i></button>
+    <button class="mrow" data-route="IPOnDemand"><i class="ti ti-map-pin"></i><span style="flex:1">По IP-адресу — точнее для правил</span><i class="ti ti-check chk"></i></button>
+  </div>
+  <div class="sheet" id="sheet-theme"><div class="grab"></div><h2>Тема оформления</h2>
+    <button class="mrow" data-act="thsys"><i class="ti ti-device-desktop"></i> Как в системе</button>
+    <button class="mrow" data-act="thdark"><i class="ti ti-moon"></i> Тёмная</button>
+    <button class="mrow" data-act="thlight"><i class="ti ti-sun"></i> Светлая</button>
+  </div>
+  <div class="sheet" id="sheet-stats"><div class="grab"></div><h2>Статистика</h2>
+    <div class="statrow"><span>Скачано</span><b id="stDown">0 Б</b></div>
+    <div class="statrow"><span>Загружено</span><b id="stUp">0 Б</b></div>
+    <div class="statrow"><span>Всего за сессию</span><b id="stTotal">0 Б</b></div>
+    <p class="hint">Данные за текущую сессию VPN. Обнуляются при переподключении.</p>
+    <button class="btn quiet wide" style="margin-top:12px" data-close="1">Закрыть</button>
+  </div>
   <div class="dialog" id="confirm"><div class="card"><h3 id="cfTitle">Подтвердите</h3><p id="cfText"></p><div class="btns"><button class="btn quiet" data-act="cfcancel">Отмена</button><button class="btn danger" id="cfOk" data-act="cfok">ОК</button></div></div></div>
   <div class="perm" id="perm"><div class="inner"><div class="shield"><i class="ti ti-shield-lock"></i></div><h2>Добро пожаловать</h2><p class="lead">Sidewire направляет трафик через туннель и умеет выводить отдельные приложения в обход. При первом подключении Android попросит разрешение на VPN.</p><ul><li><i class="ti ti-check"></i><span>Подписка добавляется по ссылке</span></li><li><i class="ti ti-check"></i><span>Раздельный туннель — на уровне VpnService</span></li><li><i class="ti ti-check"></i><span>Ядро xray, всё на устройстве</span></li></ul></div><div class="foot"><button class="btn wide" data-act="permok">Начать</button><p class="sysnote">Разрешение VPN появится при подключении</p></div></div>
 </div>
@@ -340,7 +443,7 @@ window.onToast=toast;
 
 var upSec=0,upTimer=null;
 function fmt(s){return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2);}
-function startTimer(){stopTimer();upTimer=setInterval(function(){upSec++;var t=$('#tm');if(t)t.textContent=fmt(upSec);},1000);}
+function startTimer(){stopTimer();upTimer=setInterval(function(){upSec++;var t=$('#ctimer');if(t)t.textContent=fmt(upSec);},1000);}
 function stopTimer(){clearInterval(upTimer);}
 
 /* ---------- render ---------- */
@@ -348,10 +451,10 @@ function setConnUI(){
   var st=S.conn;
   $('#connect').dataset.s=st;$('#badge').dataset.s=st;
   $('#badgeTxt').textContent={on:'CONNECTED',off:'OFFLINE',connecting:'…',error:'ERROR'}[st];
-  var map={on:'Защищено',off:'Отключено',connecting:'Подключаюсь…',error:'Ошибка'};
-  $('#cstatus').innerHTML=st==='on'?(map.on+' <span class="tm" id="tm">'+fmt(upSec)+'</span>'):map[st];
-  $('#cserver').innerHTML=(st==='off'||!S.serverName)?'':'<span class="fl">🌐</span> '+esc(S.serverName);
-  $('#nBody').textContent=st==='on'?'Защищено':'Отключено';
+  var map={on:'Подключено',off:'Отключено',connecting:'Подключаюсь…',error:'Ошибка'};
+  $('#cstatus').innerHTML='<span class="pip"></span>'+map[st];
+  var ct=$('#ctimer');if(ct)ct.textContent=st==='on'?fmt(upSec):'—';
+  $('#cserver').innerHTML=(st==='off'||!S.serverName)?'':esc(S.serverName);
   $$('.srow').forEach(function(r){r.classList.toggle('act',r.dataset.guid===S.selected);});
   $$('.subblock').forEach(function(b){b.dataset.activesub=!!b.querySelector('.srow.act');});
   if(st==='on'){$('#dl').textContent='включён';$('#ul').textContent='xray';}else{$('#dl').textContent='—';$('#ul').textContent='—';}
@@ -377,14 +480,14 @@ function paintSubs(){
     var dstr=m.expire?new Date(m.expire*1000).toLocaleDateString('ru-RU'):'—';
     var df=m.expire?Math.max(2,Math.min(100,days/90*100)):(act?100:6);
     var srokV=m.expire?(days+' дн · '+dstr):(act?'активна':'—');
-    return '<div class="subblock" data-activesub="'+act+'">'+
-      '<div class="subhdr"><button class="subtoggle" data-subtoggle="'+p.id+'"><i class="ti ti-chevron-'+(exp?'down':'right')+'"></i><div class="subti"><p class="snm">'+esc(p.name)+'</p><p class="sdt">'+p.servers.length+' серверов · автообновление 1 ч</p></div></button>'+
+    return '<div class="subblock" data-activesub="'+act+'" data-collapsed="'+(exp?'0':'1')+'">'+
+      '<div class="subhdr"><button class="subtoggle" data-subtoggle="'+p.id+'"><i class="ti ti-chevron-down"></i><div class="subti"><p class="snm">'+esc(p.name)+'</p><p class="sdt">'+p.servers.length+' серверов · автообновление 1 ч</p></div></button>'+
       '<button class="sic" data-subrefresh="'+p.id+'" aria-label="Обновить"><i class="ti ti-refresh"></i></button>'+
       '<button class="sic" data-subping="'+p.id+'" aria-label="Пинг"><i class="ti ti-gauge"></i></button>'+
       '<button class="sic" data-submenu="'+p.id+'" aria-label="Меню"><i class="ti ti-dots-vertical"></i></button></div>'+
       '<div class="subinfo"><div class="sbrow"><span class="sbl">Трафик</span><div class="sbbar"><b style="width:'+tf+'%"></b></div><span class="sbv">'+trafV+'</span></div>'+
       '<div class="sbrow"><span class="sbl">Срок</span><div class="sbbar time"><b style="width:'+df+'%"></b></div><span class="sbv">'+srokV+'</span></div></div>'+
-      (exp?'<div class="subservers">'+(srv.length?srv.map(srvRow).join(''):'<p class="empty" style="padding:11px 14px">нет серверов</p>')+'</div>':'')+
+      '<div class="subwrap"><div class="subservers">'+(srv.length?srv.map(srvRow).join(''):'<p class="empty" style="padding:11px 14px">нет серверов</p>')+'</div></div>'+
     '</div>';
   }).join('');
 }
@@ -410,7 +513,13 @@ function paintCatalog(){
   }).join('')+'</div>':'<div class="list"><div class="row static"><p class="ss" style="padding:8px 2px">все добавлены или ничего не найдено</p></div></div>';
 }
 function checkUA(){var b=$('#uaBanner');if(!b)return;var ok=false;try{ok=has()?Native.hasUsageAccess():true;}catch(e){ok=true;}b.style.display=ok?'none':'block';}
-function updateSettingsUI(){['kill','dns','ads','lan','notif'].forEach(function(k){var el=$('[data-set="'+k+'"]');if(el)el.setAttribute('aria-checked',!!S.settings[k]);});$('#notifPrev').dataset.open=!!S.settings.notif;}
+function updateSettingsUI(){['kill','dns','ads','lan','notif'].forEach(function(k){var el=$('[data-set="'+k+'"]');if(el)el.setAttribute('aria-checked',!!S.settings[k]);});var np=$('#notifPrev');if(np)np.dataset.open=!!S.settings.notif;}
+function applyTheme(){var th=S.settings.theme||'system';var sysLight=window.matchMedia&&matchMedia('(prefers-color-scheme:light)').matches;var useLight=th==='light'||(th==='system'&&sysLight);document.body.classList.toggle('light',useLight);var tv=$('#themeVal');if(tv)tv.textContent=th==='dark'?'Тёмная':th==='light'?'Светлая':'Как в системе';}
+function fmtBytes(b){b=+b||0;if(b<1024)return Math.round(b)+' Б';var u=['КБ','МБ','ГБ','ТБ'],i=-1;do{b/=1024;i++;}while(b>=1024&&i<3);return b.toFixed(b<10?2:1)+' '+u[i];}
+function fillStats(){var dn=lastRx||0,up=lastTx||0;var d=$('#stDown'),u=$('#stUp'),t=$('#stTotal');if(d)d.textContent=fmtBytes(dn);if(u)u.textContent=fmtBytes(up);if(t)t.textContent=fmtBytes(dn+up);}
+var ROUTE_LBL={IPIfNonMatch:'Стандартно',AsIs:'Только по домену',IPOnDemand:'По IP-адресу'};
+function curRoute(){if(!has())return 'IPIfNonMatch';try{return Native.getSettingStr('pref_routing_domain_strategy')||'IPIfNonMatch';}catch(e){return 'IPIfNonMatch';}}
+function paintRoute(){var cur=curRoute();$$('#sheet-routing .mrow').forEach(function(b){b.dataset.cur=b.dataset.route===cur?'1':'0';});var rv=$('#routeVal');if(rv)rv.textContent=ROUTE_LBL[cur]||'Стандартно';}
 
 /* ---------- data ---------- */
 function reload(){
@@ -444,8 +553,8 @@ window.onNativeState=function(r){if(r&&S.conn!=='on'){S.conn='on';upSec=0;startT
 function poll(){if(!has())return;var st={};try{st=JSON.parse(Native.status());}catch(e){return;}S.selected=st.selected||'';S.serverName=st.serverName||'';if(S.conn!=='connecting'){var on=!!st.running;if(on&&S.conn!=='on'){S.conn='on';upSec=upSec||0;startTimer();}if(!on&&S.conn==='on'){S.conn='off';stopTimer();}S.conn=on?'on':(S.conn==='connecting'?'connecting':'off');}setConnUI();}
 function powerTap(){
   if(!has()){toast('Запустите в приложении');return;}
-  if(S.conn==='on'){Native.disconnect();toast('Отключаю…');}
-  else{if(!S.selected){toast('Сначала выберите сервер');return;}S.conn='connecting';setConnUI();Native.connect();toast('Подключаю…');}
+  if(S.conn==='on'||S.conn==='connecting'){var wasC=S.conn==='connecting';Native.disconnect();S.conn='off';setConnUI();toast(wasC?'Подключение отменено':'Отключаю…');}
+  else{try{var st0=JSON.parse(Native.status());if(st0&&st0.selected)S.selected=st0.selected;}catch(e){}if(!S.selected){toast('Сначала выберите сервер');return;}S.conn='connecting';setConnUI();Native.connect();toast('Подключаю…');}
   setTimeout(poll,1000);setTimeout(poll,2600);
 }
 function pickSrv(g){if(has())Native.select(g);S.selected=g;$$('.srow').forEach(function(r){r.classList.toggle('act',r.dataset.guid===g);});$$('.subblock').forEach(function(b){b.dataset.activesub=!!b.querySelector('.srow.act');});buzz();toast('Сервер выбран');}
@@ -462,35 +571,40 @@ function renderGraph(){var w=300,h=46,max=1;for(var i=0;i<gdata.length;i++)if(gd
 function pollSpeed(){if(!has())return;if(S.conn!=='on'){$('#dl').textContent='0.0';$('#ul').textContent='0.0';if(gdata.length){gdata=[];renderGraph();}lastT=0;return;}var t;try{t=JSON.parse(Native.traffic());}catch(e){return;}var now=Date.now();if(lastT){var dt=(now-lastT)/1000||1;var dl=Math.max(0,t.rx-lastRx)*8/1e6/dt,ul=Math.max(0,t.tx-lastTx)*8/1e6/dt;$('#dl').textContent=dl.toFixed(1);$('#ul').textContent=ul.toFixed(1);gdata.push(dl);if(gdata.length>44)gdata.shift();renderGraph();}lastRx=t.rx;lastTx=t.tx;lastT=now;}
 
 /* ping */
-var pingBusy=false,pingForFast=false;
-function runPing(forFast){if(!has())return;if(pingBusy){return;}pingBusy=true;pingForFast=forFast;toast(forFast?'Ищу самый быстрый…':'Проверяю пинги…');Native.pingAll();}
-window.onPing=function(finished){try{pings=JSON.parse(Native.pings());}catch(e){}paintSubs();if(finished){pingBusy=false;if(pingForFast){pingForFast=false;var best=null;for(var g in pings){if(pings[g]>0&&(best===null||pings[g]<pings[best]))best=g;}if(best){pickSrv(best);toast('Самый быстрый: '+pings[best]+' мс');}else toast('Не удалось измерить');}else toast('Пинги обновлены');}};
+var pingBusy=false,pingForFast=false,pingTimer=null;
+function finishPing(){if(!pingBusy)return;pingBusy=false;if(pingTimer){clearInterval(pingTimer);pingTimer=null;}if(pingForFast){pingForFast=false;var best=null;for(var g in pings){if(pings[g]>0&&(best===null||pings[g]<pings[best]))best=g;}if(best){pickSrv(best);toast('Самый быстрый: '+pings[best]+' мс');}else toast('Не удалось измерить');}else toast('Пинги обновлены');}
+function runPing(forFast){if(!has())return;if(pingBusy)return;pingBusy=true;pingForFast=forFast;toast(forFast?'Ищу самый быстрый…':'Проверяю пинги…');Native.pingAll();if(pingTimer)clearInterval(pingTimer);var ticks=0;pingTimer=setInterval(function(){ticks++;try{pings=JSON.parse(Native.pings());}catch(e){}paintSubs();if(ticks>=12)finishPing();},1000);}
+window.onPing=function(finished){try{pings=JSON.parse(Native.pings());}catch(e){}paintSubs();if(finished)finishPing();};
 
 /* ---------- sheets ---------- */
 function openSheet(n){$('#scrim').dataset.open='true';$('#sheet-'+n).dataset.open='true';}
-function closeSheets(){$('#scrim').dataset.open='false';$$('.sheet').forEach(function(s){s.dataset.open='false';});}
+function closeSheets(){$('#scrim').dataset.open='false';$$('.sheet').forEach(function(s){s.dataset.open='false';});try{var ae=document.activeElement;if(ae&&ae.blur)ae.blur();}catch(e){}}
+function anySheetOpen(){if($('#scrim').dataset.open==='true')return true;return [].some.call($$('.sheet'),function(s){return s.dataset.open==='true';});}
 var cfCb=null;function openConfirm(t,x,ok,cb){$('#cfTitle').textContent=t;$('#cfText').textContent=x;$('#cfOk').textContent=ok;cfCb=cb;$('#confirm').dataset.open='true';}
 function closeConfirm(){$('#confirm').dataset.open='false';cfCb=null;}
 
 /* ---------- events ---------- */
 var subMenuId=null;var catMode='on';
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-power],[data-node],[data-actv],[data-rmc],[data-add],[data-set],[data-pref],[data-adblock],[data-view],[data-sheet],[data-close],[data-subtoggle],[data-subrefresh],[data-subping],[data-submenu],[data-act]');
+  var t=e.target.closest('[data-power],[data-node],[data-actv],[data-rmc],[data-add],[data-set],[data-pref],[data-speed],[data-notif],[data-route],[data-adblock],[data-view],[data-sheet],[data-close],[data-subtoggle],[data-subrefresh],[data-subping],[data-submenu],[data-act]');
   if(!t)return;var d=t.dataset;
   if(d.power!==undefined){powerTap();return;}
   if(d.node!==undefined){pickSrv(d.node);return;}
-  if(d.set!==undefined){S.settings[d.set]=!S.settings[d.set];t.setAttribute('aria-checked',S.settings[d.set]);if(d.set==='notif')$('#notifPrev').dataset.open=S.settings.notif;buzz();saveUI();toast(S.settings[d.set]?'Включено':'Выключено');return;}
+  if(d.set!==undefined){S.settings[d.set]=!S.settings[d.set];t.setAttribute('aria-checked',S.settings[d.set]);if(d.set==='notif'){var _np=$('#notifPrev');if(_np)_np.dataset.open=S.settings.notif;}buzz();saveUI();toast(S.settings[d.set]?'Включено':'Выключено');return;}
+  if(d.speed!==undefined){var sv=t.getAttribute('aria-checked')!=='true';t.setAttribute('aria-checked',sv);try{Native.setSpeedNotif(sv);}catch(e){}buzz();toast(sv?'Скорость показывается':'Скорость скрыта');return;}
+  if(d.notif!==undefined){var nvv=t.getAttribute('aria-checked')!=='true';t.setAttribute('aria-checked',nvv);try{Native.setNotifHidden(!nvv);}catch(e){}buzz();toast((nvv?'Уведомление включено':'Уведомление скрыто')+' · применится при переподключении');return;}
+  if(d.route!==undefined){try{Native.setSettingStr('pref_routing_domain_strategy',d.route);}catch(e){}paintRoute();buzz();toast('Сохранено · применится при переподключении');closeSheets();return;}
   if(d.pref!==undefined){var nv=t.getAttribute('aria-checked')!=='true';t.setAttribute('aria-checked',nv);try{Native.setSetting(d.pref,nv);}catch(e){}buzz();toast((nv?'Включено':'Выключено')+' · применится при переподключении');return;}
   if(d.adblock!==undefined){var av=t.getAttribute('aria-checked')!=='true';t.setAttribute('aria-checked',av);try{Native.setAdBlock(av);}catch(e){}buzz();toast((av?'Реклама блокируется':'Блокировка выключена')+' · применится при переподключении');return;}
   if(d.actv!==undefined){var _pk=d.actv,_a2=S.apps.find(function(x){return x.pkg===_pk;});var _na=!(_a2&&_a2.active!==false);setActive(_pk,_na);toast(_na?'Включено':'Приостановлено');return;}
   if(d.rmc!==undefined){var _p=d.rmc,_m=d.mode||'on',_a=S.apps.find(function(x){return x.pkg===_p;});openConfirm('Удалить приложение?',(_a?_a.label:'Приложение')+' будет убрано из списка.','Удалить',function(){setTrigger(_p,false,_m);toast('Удалено');});return;}
   if(d.add!==undefined){setTrigger(d.add,true,catMode);toast(catMode==='off'?'VPN будет выключаться при открытии':'VPN будет включаться при открытии');return;}
   if(d.close!==undefined){closeSheets();return;}
-  if(d.subtoggle!==undefined){S.collapsed[d.subtoggle]=!S.collapsed[d.subtoggle];saveUI();paintSubs();setConnUI();return;}
+  if(d.subtoggle!==undefined){S.collapsed[d.subtoggle]=!S.collapsed[d.subtoggle];saveUI();var _blk=t.closest('.subblock');if(_blk)_blk.dataset.collapsed=S.collapsed[d.subtoggle]?'1':'0';return;}
   if(d.subrefresh!==undefined){updateSubs();return;}
   if(d.subping!==undefined){runPing(false);return;}
   if(d.submenu!==undefined){subMenuId=d.submenu;openSheet('submenu');return;}
-  if(d.sheet){if(d.sheet==='catalog'){catMode=d.mode||'on';$('#catSearch').value='';var ct=$('#catTitle'),cl=$('#catLead');if(ct)ct.textContent=catMode==='off'?'Отключать VPN':'Включать VPN';if(cl)cl.textContent=catMode==='off'?'Выберите приложения, которые будут выключать VPN при открытии.':'Выберите приложения, которые будут включать VPN при открытии.';paintCatalog();}openSheet(d.sheet);return;}
+  if(d.sheet){if(d.sheet==='catalog'){catMode=d.mode||'on';$('#catSearch').value='';var ct=$('#catTitle'),cl=$('#catLead');if(ct)ct.textContent=catMode==='off'?'Отключать VPN':'Включать VPN';if(cl)cl.textContent=catMode==='off'?'Выберите приложения, которые будут выключать VPN при открытии.':'Выберите приложения, которые будут включать VPN при открытии.';paintCatalog();}if(d.sheet==='stats')fillStats();if(d.sheet==='routing')paintRoute();openSheet(d.sheet);return;}
   if(d.view){switchView(d.view);return;}
   if(d.act){handleAct(d.act);return;}
 });
@@ -507,12 +621,20 @@ function handleAct(a){
     case 'addClip':navigator.clipboard.readText().then(function(t){doAdd((t||'').trim());}).catch(function(){toast('Нет доступа к буферу');});break;
     case 'addQr':closeSheets();if(has())Native.openScanner();break;
     case 'addManual':closeSheets();$('#linkIn').focus();toast('Вставьте vless:// в поле сверху');break;
-    case 'collapseall':{var anyOpen=S.profiles.some(function(p){return !S.collapsed[p.id];});S.profiles.forEach(function(p){S.collapsed[p.id]=anyOpen;});$('#collapseAll').textContent=anyOpen?'Показать все':'Скрыть все';saveUI();paintSubs();setConnUI();break;}
+    case 'collapseall':{var anyOpen=S.profiles.some(function(p){return !S.collapsed[p.id];});S.profiles.forEach(function(p){S.collapsed[p.id]=anyOpen;});$('#collapseAll').textContent=anyOpen?'Показать все':'Скрыть все';$$('.subblock').forEach(function(b){var tg=b.querySelector('[data-subtoggle]');if(tg)b.dataset.collapsed=S.collapsed[tg.dataset.subtoggle]?'1':'0';});saveUI();break;}
     case 'reset':openConfirm('Сбросить списки?','Все приложения будут убраны из обоих списков.','Сбросить',function(){S.apps.slice().forEach(function(a){if(a.on)setTrigger(a.pkg,false,'on');if(a.off)setTrigger(a.pkg,false,'off');});toast('Сброшено');});break;
     case 'grantua':if(has())Native.openUsageAccess();break;
     case 'killswitch':if(has()){Native.openVpnSettings();toast('Включите «Always-on VPN» и блокировку без VPN');}break;
+    case 'perapp':if(has())Native.openPerApp();break;
+    case 'routing':if(has())Native.openRouting();break;
+    case 'logs':if(has())Native.openLogs();break;
+    case 'source':if(has())Native.openSource();break;
+    case 'notifsettings':if(has())Native.openNotifSettings();break;
+    case 'thsys':S.settings.theme='system';saveUI();applyTheme();closeSheets();break;
+    case 'thdark':S.settings.theme='dark';saveUI();applyTheme();closeSheets();break;
+    case 'thlight':S.settings.theme='light';saveUI();applyTheme();closeSheets();break;
     case 'coachok':S.settings.coach=true;$('#coach').dataset.open='false';saveUI();break;
-    case 'notifdisc':if(S.conn==='on'){Native.disconnect();toast('Отключаю…');}else toast('VPN выключен');break;
+    case 'notifdisc':if(has()){Native.disconnect();toast('Отключаю…');}break;
     case 'smupdate':closeSheets();updateSubs();break;
     case 'smdelete':closeSheets();if(has())Native.removeSub(subMenuId);toast('Подписка удалена');setTimeout(reload,200);break;
     case 'cfcancel':closeConfirm();break;
@@ -525,9 +647,21 @@ $('#linkGo').addEventListener('click',addSubLink);
 $('#catSearch').addEventListener('input',paintCatalog);
 $('#nodeSearch').addEventListener('input',function(){paintSubs();setConnUI();});
 
-updateSettingsUI();
-function syncNativeSettings(){if(!has())return;$$('[data-pref]').forEach(function(el){try{el.setAttribute('aria-checked',!!Native.getSetting(el.dataset.pref));}catch(e){}});try{var ab=$('[data-adblock]');if(ab)ab.setAttribute('aria-checked',!!Native.getAdBlock());}catch(e){}}
+updateSettingsUI();applyTheme();paintRoute();
+function syncNativeSettings(){if(!has())return;$$('[data-pref]').forEach(function(el){try{el.setAttribute('aria-checked',!!Native.getSetting(el.dataset.pref));}catch(e){}});try{var ab=$('[data-adblock]');if(ab)ab.setAttribute('aria-checked',!!Native.getAdBlock());}catch(e){}try{var nb=$('[data-notif]');if(nb)nb.setAttribute('aria-checked',!Native.getSetting('sw_notif_hidden'));}catch(e){}}
 syncNativeSettings();
+/* закрытие шторок: тап по фону, тап по «ручке», свайп вниз */
+$('#scrim').addEventListener('click',closeSheets);
+$$('.sheet').forEach(function(sh){var g=sh.querySelector('.grab');if(!g)return;var y0=null;g.addEventListener('touchstart',function(e){y0=e.touches[0].clientY;},{passive:true});g.addEventListener('touchmove',function(e){if(y0!==null&&e.touches[0].clientY-y0>44){y0=null;closeSheets();}},{passive:true});g.addEventListener('touchend',function(){y0=null;});g.addEventListener('click',function(){closeSheets();});});
+/* кнопка «Назад» на телефоне: закрыть оверлей → на главную → выход */
+window.onBack=function(){try{
+  if($('#perm').dataset.open==='true')return true;
+  if($('#coach').dataset.open==='true'){$('#coach').dataset.open='false';S.settings.coach=true;saveUI();return true;}
+  if($('#confirm').dataset.open==='true'){closeConfirm();return true;}
+  if(anySheetOpen()){closeSheets();return true;}
+  var a=document.querySelector('.tab[data-active="true"]');
+  if(a&&a.dataset.view!=='flow'){switchView('flow');return true;}
+}catch(e){}return false;};
 if(!S.settings.coach)$('#coach').dataset.open='true';
 if(!S.settings.onboarded)$('#perm').dataset.open='true';
 reload();reloadApps();if(has())setTimeout(function(){Native.refreshMeta();},400);

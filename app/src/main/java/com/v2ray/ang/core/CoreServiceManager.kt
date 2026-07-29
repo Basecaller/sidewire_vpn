@@ -530,6 +530,15 @@ object CoreServiceManager {
                 AppConfig.MSG_MEASURE_DELAY -> {
                     measureV2rayDelay()
                 }
+
+                AppConfig.MSG_REFRESH_SPEED -> {
+                    // Live toggle of the speed line in the notification (no reconnect needed)
+                    if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED)) {
+                        NotificationManager.startSpeedNotification()
+                    } else {
+                        NotificationManager.stopSpeedNotification()
+                    }
+                }
             }
 
             when (intent?.action) {
